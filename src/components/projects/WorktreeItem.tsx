@@ -35,7 +35,6 @@ import {
   TooltipTrigger,
   TooltipContent,
 } from '@/components/ui/tooltip'
-import { useSidebarWidth } from '@/components/layout/SidebarWidthContext'
 
 interface WorktreeItemProps {
   worktree: Worktree
@@ -337,10 +336,6 @@ export function WorktreeItem({
     [projectId, worktree.id, worktree.path, selectProject, selectWorktree]
   )
 
-  // Responsive padding based on sidebar width
-  const sidebarWidth = useSidebarWidth()
-  const isNarrowSidebar = sidebarWidth < 200
-
   // Inline editing state
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(worktree.name)
@@ -527,8 +522,8 @@ export function WorktreeItem({
       >
         <div
           className={cn(
-            'group relative flex cursor-pointer items-center gap-1.5 py-1.5 pr-2 overflow-hidden transition-colors duration-150',
-            isNarrowSidebar ? 'pl-4' : 'pl-7',
+            'group relative flex cursor-pointer items-center gap-1.5 py-1 pr-2 overflow-hidden transition-colors duration-150',
+            'pl-3',
             isSelected
               ? 'bg-primary/10 text-foreground before:absolute before:left-0 before:top-0 before:h-full before:w-[3px] before:bg-primary'
               : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
@@ -598,7 +593,7 @@ export function WorktreeItem({
               <TooltipTrigger asChild>
                 <button
                   onClick={handlePull}
-                  className="shrink-0 rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium text-primary transition-colors hover:bg-primary/20"
+                  className="shrink-0 text-[11px] font-medium text-primary transition-opacity hover:opacity-70"
                 >
                   <span className="flex items-center gap-0.5">
                     <ArrowDown className="h-3 w-3" />
@@ -616,7 +611,7 @@ export function WorktreeItem({
               <TooltipTrigger asChild>
                 <button
                   onClick={handlePush}
-                  className="shrink-0 rounded bg-orange-500/10 px-1.5 py-0.5 text-[11px] font-medium text-orange-500 transition-colors hover:bg-orange-500/20"
+                  className="shrink-0 text-[11px] font-medium text-orange-500 transition-opacity hover:opacity-70"
                 >
                   <span className="flex items-center gap-0.5">
                     <ArrowUp className="h-3 w-3" />
@@ -649,7 +644,7 @@ export function WorktreeItem({
         <div
           className={cn(
             'border-l border-border/40 py-0.5',
-            isNarrowSidebar ? 'ml-6' : 'ml-9'
+            'ml-4'
           )}
         >
           {sessionGroups.map(group => (
