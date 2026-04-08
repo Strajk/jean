@@ -474,10 +474,8 @@ function SubToolItem({ toolCall, onFileClick }: SubToolItemProps) {
         )}
       >
         <CollapsibleTrigger className={TOOL_CALL_SUB_ROW_CLASS}>
-          <span className="shrink-0 [&>svg]:h-3 [&>svg]:w-3">{icon}</span>
-          <span className="font-medium shrink-0 flex-none whitespace-nowrap">
-            {label}
-          </span>
+          <span className="[&>svg]:h-3 [&>svg]:w-3">{icon}</span>
+          <span className="font-medium">{label}</span>
           {detail && filePath && onFileClick ? (
             <code
               role="button"
@@ -741,15 +739,10 @@ function getToolDisplay(toolCall: ToolCall): ToolDisplay {
     case 'Bash': {
       const command = input.command as string | undefined
       const description = input.description as string | undefined
-      // Truncate long commands for display
-      const truncatedCommand =
-        command && command.length > 50
-          ? command.substring(0, 50) + '...'
-          : command
       return {
         icon: <Terminal className="h-4 w-4 shrink-0" />,
         label: 'Bash',
-        detail: truncatedCommand,
+        detail: command, // CSS truncate handles overflow — no JS truncation needed
         expandedContent: description
           ? `${description}\n\n$ ${command}`
           : `$ ${command ?? '(no command)'}`,
@@ -826,12 +819,10 @@ function getToolDisplay(toolCall: ToolCall): ToolDisplay {
     // Codex multi-agent tools
     case 'SpawnAgent': {
       const prompt = input.prompt as string | undefined
-      const truncatedPrompt =
-        prompt && prompt.length > 60 ? prompt.substring(0, 60) + '...' : prompt
       return {
         icon: <Users className="h-4 w-4 shrink-0" />,
         label: 'Spawn Agent',
-        detail: truncatedPrompt ?? 'sub-agent',
+        detail: prompt ?? 'sub-agent', // CSS truncate handles overflow — no JS truncation needed
         expandedContent: prompt ?? JSON.stringify(input, null, 2),
       }
     }
