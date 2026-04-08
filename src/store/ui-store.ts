@@ -230,6 +230,8 @@ interface UIState {
   setChatSearchOpen: (open: boolean) => void
   githubDashboardOpen: boolean
   setGitHubDashboardOpen: (open: boolean) => void
+  sessionHistoryOpen: boolean
+  setSessionHistoryOpen: (open: boolean) => void
 }
 
 // Store callback outside Zustand state to avoid serialization issues with
@@ -302,6 +304,7 @@ export const useUIStore = create<UIState>()(
       updateModalVersion: null,
       chatSearchOpen: false,
       githubDashboardOpen: false,
+      sessionHistoryOpen: false,
       toggleLeftSidebar: () =>
         set(
           state => ({ leftSidebarVisible: !state.leftSidebarVisible }),
@@ -1022,6 +1025,16 @@ export const useUIStore = create<UIState>()(
               : { githubDashboardOpen: open },
           undefined,
           'setGitHubDashboardOpen'
+        ),
+
+      setSessionHistoryOpen: (open: boolean) =>
+        set(
+          state =>
+            state.sessionHistoryOpen === open
+              ? state
+              : { sessionHistoryOpen: open },
+          undefined,
+          'setSessionHistoryOpen'
         ),
     }),
     {
