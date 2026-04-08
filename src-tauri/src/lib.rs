@@ -239,9 +239,15 @@ pub struct AppPreferences {
     pub expand_tool_calls_by_default: bool, // Expand all tool call collapsibles by default (default: false)
     #[serde(default = "default_sidebar_group_by_status")]
     pub sidebar_group_by_status: bool, // Group sidebar sessions by status headers (default: true)
+    #[serde(default = "default_terminal_word_wrap")]
+    pub terminal_word_wrap: bool, // Terminal word wrap (default: true, false = horizontal scroll with wide cols)
 }
 
 fn default_sidebar_group_by_status() -> bool {
+    true
+}
+
+fn default_terminal_word_wrap() -> bool {
     true
 }
 
@@ -1486,6 +1492,7 @@ impl Default for AppPreferences {
             gh_cli_source: default_cli_source(),
             expand_tool_calls_by_default: false,
             sidebar_group_by_status: default_sidebar_group_by_status(),
+            terminal_word_wrap: default_terminal_word_wrap(),
         }
     }
 }
