@@ -286,6 +286,7 @@ describe('preferences service', () => {
         jean_mcp_max_depth: 3,
         jean_mcp_rate_limit_per_minute: 20,
         sidebar_group_by_status: true,
+        terminal_word_wrap: true,
       }
       vi.mocked(invoke).mockResolvedValueOnce(mockPreferences)
 
@@ -436,6 +437,7 @@ describe('preferences service', () => {
         jean_mcp_max_depth: 3,
         jean_mcp_rate_limit_per_minute: 20,
         sidebar_group_by_status: true,
+        terminal_word_wrap: true,
       }
       vi.mocked(invoke).mockResolvedValueOnce(prefsWithOldBinding)
 
@@ -556,6 +558,7 @@ describe('preferences service', () => {
         jean_mcp_max_depth: 3,
         jean_mcp_rate_limit_per_minute: 20,
         sidebar_group_by_status: true,
+        terminal_word_wrap: true,
       }
       vi.mocked(invoke).mockResolvedValueOnce(prefsWithDeprecatedFastModel)
 
@@ -676,6 +679,7 @@ describe('preferences service', () => {
         jean_mcp_max_depth: 3,
         jean_mcp_rate_limit_per_minute: 20,
         sidebar_group_by_status: true,
+        terminal_word_wrap: true,
       }
 
       const { result } = renderHook(() => useSavePreferences(), {
@@ -798,6 +802,7 @@ describe('preferences service', () => {
         jean_mcp_max_depth: 3,
         jean_mcp_rate_limit_per_minute: 20,
         sidebar_group_by_status: true,
+        terminal_word_wrap: true,
       }
 
       const { result } = renderHook(() => useSavePreferences(), {
@@ -962,6 +967,7 @@ describe('preferences service', () => {
         jean_mcp_max_depth: 3,
         jean_mcp_rate_limit_per_minute: 20,
         sidebar_group_by_status: true,
+        terminal_word_wrap: true,
       }
 
       const { result } = renderHook(() => useSavePreferences(), {
@@ -1082,6 +1088,7 @@ describe('preferences service', () => {
         jean_mcp_max_depth: 3,
         jean_mcp_rate_limit_per_minute: 20,
         sidebar_group_by_status: true,
+        terminal_word_wrap: true,
       }
 
       const { result } = renderHook(() => useSavePreferences(), {

@@ -344,6 +344,8 @@ pub struct AppPreferences {
     pub jean_mcp_rate_limit_per_minute: u32, // Per-source rate limit for session-spawning tools (default 20)
     #[serde(default = "default_sidebar_group_by_status")]
     pub sidebar_group_by_status: bool, // Group sidebar sessions by status headers (default: true)
+    #[serde(default = "default_terminal_word_wrap")]
+    pub terminal_word_wrap: bool, // Terminal word wrap (default: true, false = horizontal scroll with wide cols)
 }
 
 fn default_jean_mcp_enabled() -> bool {
@@ -359,6 +361,10 @@ fn default_jean_mcp_rate_limit() -> u32 {
 }
 
 fn default_sidebar_group_by_status() -> bool {
+    true
+}
+
+fn default_terminal_word_wrap() -> bool {
     true
 }
 
@@ -1836,6 +1842,7 @@ impl Default for AppPreferences {
             jean_mcp_max_depth: default_jean_mcp_max_depth(),
             jean_mcp_rate_limit_per_minute: default_jean_mcp_rate_limit(),
             sidebar_group_by_status: default_sidebar_group_by_status(),
+            terminal_word_wrap: default_terminal_word_wrap(),
         }
     }
 }

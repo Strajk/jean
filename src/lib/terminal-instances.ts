@@ -1014,7 +1014,14 @@ export async function attachToContainer(
     // animation) cause portable_pty to crash with an internal assertion failure.
     const rawCols = terminal.cols
     const rawRows = terminal.rows
-    const { cols, rows } = getSafeTerminalDimensions(terminal)
+    const { cols: safeCols, rows } = getSafeTerminalDimensions(terminal)
+    // In no-wrap mode, widen the .xterm element so the canvas renders all cols,
+    // then resize the terminal to NO_WRAP_COLS.
+    const cols = wordWrapEnabled ? safeCols : NO_WRAP_COLS
+    if (!wordWrapEnabled) {
+      applyNoWrapLayout(instance)
+      terminal.resize(cols, rows)
+    }
     console.log(
       `[terminal-instances] attachToContainer ${terminalId}: fit=${rawCols}x${rawRows} → used=${cols}x${rows}, initialized=${instance.initialized}, container=${container.clientWidth}x${container.clientHeight}`
     )
@@ -1118,14 +1125,26 @@ export function detachFromContainer(terminalId: string): void {
 
 /**
  * Fit terminal to its container dimensions.
+ * When word wrap is disabled, only fits rows (keeps wide column count).
  */
 export function fitTerminal(terminalId: string): void {
   const instance = instances.get(terminalId)
   if (!instance || !instance.fitAddon || !instance.terminal) return
 
-  instance.fitAddon.fit()
-  const { cols, rows } = getSafeTerminalDimensions(instance.terminal)
-  invoke('terminal_resize', { terminalId, cols, rows }).catch(console.error)
+  if (wordWrapEnabled) {
+    instance.fitAddon.fit()
+    const { cols, rows } = getSafeTerminalDimensions(instance.terminal)
+    invoke('terminal_resize', { terminalId, cols, rows }).catch(console.error)
+  } else {
+    // Only recalculate rows from container height; keep wide cols and element width.
+    // Don't call fitAddon.fit() — it would shrink the element back to container width.
+    const dims = instance.fitAddon.proposeDimensions()
+    if (!dims) return
+    const rows = Math.max(1, dims.rows)
+    applyNoWrapLayout(instance)
+    instance.terminal.resize(NO_WRAP_COLS, rows)
+    invoke('terminal_resize', { terminalId, cols: NO_WRAP_COLS, rows }).catch(console.error)
+  }
 }
 
 /**
@@ -1211,6 +1230,79 @@ export function disposePanelWorktreeTerminals(worktreeId: string): void {
  */
 export function hasInstance(terminalId: string): boolean {
   return instances.has(terminalId)
+}
+
+/** Current word-wrap state (module-level so fitTerminal can read it) */
+let wordWrapEnabled = true
+
+// PTY-based terminals require a fixed column count — there's no true "infinite width" mode.
+// 500 is a pragmatic workaround: wide enough for most real-world output but still a hard limit.
+// A proper solution would decouple the renderer width from the PTY cols (like VS Code does
+// with its custom terminal renderer), but xterm.js ties them together.
+const NO_WRAP_COLS = 500
+
+/**
+ * Apply no-wrap layout to a single terminal: widen the .xterm element and
+ * make the container horizontally scrollable.
+ */
+function applyNoWrapLayout(instance: PersistentTerminal): void {
+  const el = instance.terminal.element
+  if (!el) return
+  const container = el.parentElement as HTMLElement | null
+  if (!container) return
+
+  // Derive character width from fitAddon's proposed cols (based on container width)
+  const dims = instance.fitAddon.proposeDimensions()
+  if (!dims) return
+  const charWidth = container.clientWidth / dims.cols
+  const wideWidth = Math.ceil(charWidth * NO_WRAP_COLS)
+
+  // Widen the xterm element so canvas renders all cols without internal clipping
+  el.style.width = `${wideWidth}px`
+  // Container provides horizontal scrollbar
+  container.style.overflowX = 'auto'
+  container.style.overflowY = 'hidden'
+}
+
+/**
+ * Remove no-wrap layout overrides from a terminal.
+ */
+function clearNoWrapLayout(instance: PersistentTerminal): void {
+  const el = instance.terminal.element
+  if (!el) return
+  const container = el.parentElement as HTMLElement | null
+  if (!container) return
+
+  el.style.width = ''
+  container.style.overflowX = ''
+  container.style.overflowY = ''
+}
+
+/**
+ * Set word-wrap mode for all terminal instances.
+ * When disabled, terminals use a wide fixed column count and allow horizontal scrolling.
+ */
+export function setWordWrap(enabled: boolean): void {
+  wordWrapEnabled = enabled
+
+  for (const [terminalId, instance] of instances) {
+    if (enabled) {
+      clearNoWrapLayout(instance)
+      // Re-fit to container width
+      fitTerminal(terminalId)
+    } else {
+      // Resize to wide cols, then widen the element so the canvas is fully visible
+      const rows = instance.terminal.rows
+      applyNoWrapLayout(instance)
+      instance.terminal.resize(NO_WRAP_COLS, rows)
+      invoke('terminal_resize', { terminalId, cols: NO_WRAP_COLS, rows }).catch(console.error)
+    }
+  }
+}
+
+/** Whether word wrap is currently enabled */
+export function isWordWrapEnabled(): boolean {
+  return wordWrapEnabled
 }
 
 /**

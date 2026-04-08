@@ -1075,6 +1075,7 @@ export interface AppPreferences {
   jean_mcp_max_depth: number // Max recursive spawn depth via Jean MCP (default 3)
   jean_mcp_rate_limit_per_minute: number // Per-source rate limit for session-spawning tools (default 20)
   sidebar_group_by_status: boolean // Group sidebar sessions by status headers (default: true)
+  terminal_word_wrap: boolean // Terminal word wrap (default: true, false = horizontal scroll)
 }
 
 export type TerminalBackgroundMode = 'auto' | 'light' | 'dark' | 'custom'
@@ -1906,4 +1907,5 @@ export const defaultPreferences: AppPreferences = {
   jean_mcp_max_depth: 3,
   jean_mcp_rate_limit_per_minute: 20,
   sidebar_group_by_status: true, // Default: group by status
+  terminal_word_wrap: true, // Default: word wrap enabled
 }
