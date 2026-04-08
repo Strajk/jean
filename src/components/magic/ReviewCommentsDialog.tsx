@@ -259,6 +259,9 @@ export function ReviewCommentsDialog() {
   const resetTransientState = useCallback(() => {
     setPhase('loading')
     setError(null)
+    // Reset isSending here because handleOpenChange doesn't fire on programmatic
+    // close (setReviewCommentsModalOpen(false) in handleSendToChat), so the flag
+    // can be stuck from a previous "Send to Chat" action.
     setIsSending(false)
     setComments([])
     setSelected(new Set())
