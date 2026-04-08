@@ -564,6 +564,7 @@ pub async fn update_session_state(
     enabled_mcp_servers: Option<Option<Vec<String>>>,
     selected_execution_mode: Option<Option<String>>,
     table_checked_rows: Option<std::collections::HashMap<String, Vec<u32>>>,
+    highlights: Option<Vec<super::types::TextHighlight>>,
 ) -> Result<(), String> {
     log::trace!("Updating session state for: {session_id}");
 
@@ -634,6 +635,9 @@ pub async fn update_session_state(
             }
             if let Some(v) = table_checked_rows {
                 session.table_checked_rows = v;
+            }
+            if let Some(v) = highlights {
+                session.highlights = v;
             }
             Ok(())
         } else {

@@ -170,6 +170,17 @@ export interface DeniedMessageContext {
 }
 
 /**
+ * A persistent text highlight within a chat message.
+ * Uses text content + offset for best-effort re-matching after re-renders.
+ */
+export interface TextHighlight {
+  id: string
+  message_id: string
+  text: string
+  start_offset: number
+}
+
+/**
  * A chat session within a worktree (supports multiple sessions per worktree)
  */
 export interface Session {
@@ -276,6 +287,8 @@ export interface Session {
   loaded_run_start_index?: number
   /** Pending ScheduleWakeup request (one per session, last-wins) */
   scheduled_wakeup?: ScheduledWakeup
+  /** User-created text highlights (persistent annotations) */
+  highlights?: TextHighlight[]
 }
 
 /**

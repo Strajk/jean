@@ -35,6 +35,15 @@ pub struct LabelData {
     pub color: String,
 }
 
+/// A persistent text highlight within a chat message
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TextHighlight {
+    pub id: String,
+    pub message_id: String,
+    pub text: String,
+    pub start_offset: u64,
+}
+
 /// Deserializes label from either a plain string (old format) or a LabelData object (new format).
 fn deserialize_label_compat<'de, D>(deserializer: D) -> Result<Option<LabelData>, D::Error>
 where
@@ -656,6 +665,10 @@ pub struct Session {
     /// Fires the stored prompt into this session after fire_at_unix.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub scheduled_wakeup: Option<ScheduledWakeup>,
+
+    /// User-created text highlights (persistent annotations)
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub highlights: Vec<TextHighlight>,
 }
 
 /// A ScheduleWakeup request originated from the Claude CLI tool.
@@ -748,6 +761,7 @@ impl Session {
             total_runs: 0,
             loaded_run_start_index: 0,
             scheduled_wakeup: None,
+            highlights: vec![],
         }
     }
 
@@ -948,6 +962,7 @@ impl SessionMetadata {
             total_runs: self.runs.len(),
             loaded_run_start_index: self.runs.len(),
             scheduled_wakeup: self.scheduled_wakeup.clone(),
+            highlights: self.highlights.clone(),
         }
     }
 
@@ -991,6 +1006,7 @@ impl SessionMetadata {
         self.table_checked_rows = session.table_checked_rows.clone();
         self.label = session.label.clone();
         self.scheduled_wakeup = session.scheduled_wakeup.clone();
+        self.highlights = session.highlights.clone();
         // NOTE: Do NOT overwrite queued_messages here. Queue state is managed
         // exclusively by enqueue/dequeue/remove/clear operations which use
         // atomic read-modify-write via with_existing_metadata_mut. Overwriting
@@ -1344,6 +1360,10 @@ pub struct SessionMetadata {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub queued_messages: Vec<serde_json::Value>,
 
+    /// User-created text highlights (persistent annotations)
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub highlights: Vec<TextHighlight>,
+
     /// Unix timestamp when session was last opened/viewed by the user
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_opened_at: Option<u64>,
@@ -1455,6 +1475,7 @@ impl SessionMetadata {
             table_checked_rows: HashMap::new(),
             label: None,
             queued_messages: vec![],
+            highlights: vec![],
             last_opened_at: None,
             runs: vec![],
             scheduled_wakeup: None,
