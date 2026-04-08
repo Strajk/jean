@@ -31,6 +31,7 @@ interface UIState {
   leftSidebarSize: number // Width in pixels, persisted across sessions
   rightSidebarVisible: boolean
   commandPaletteOpen: boolean
+  sessionPaletteOpen: boolean
   preferencesOpen: boolean
   preferencesPane: PreferencePane | null
   commitModalOpen: boolean
@@ -103,6 +104,7 @@ interface UIState {
   setRightSidebarVisible: (visible: boolean) => void
   toggleCommandPalette: () => void
   setCommandPaletteOpen: (open: boolean) => void
+  setSessionPaletteOpen: (open: boolean) => void
   togglePreferences: () => void
   setPreferencesOpen: (open: boolean) => void
   openPreferencesPane: (pane: PreferencePane) => void
@@ -191,6 +193,7 @@ export const useUIStore = create<UIState>()(
       leftSidebarSize: 250, // Default width in pixels
       rightSidebarVisible: false,
       commandPaletteOpen: false,
+      sessionPaletteOpen: false,
       preferencesOpen: false,
       preferencesPane: null,
       commitModalOpen: false,
@@ -279,6 +282,9 @@ export const useUIStore = create<UIState>()(
 
       setCommandPaletteOpen: open =>
         set({ commandPaletteOpen: open }, undefined, 'setCommandPaletteOpen'),
+
+      setSessionPaletteOpen: open =>
+        set({ sessionPaletteOpen: open }, undefined, 'setSessionPaletteOpen'),
 
       togglePreferences: () =>
         set(
