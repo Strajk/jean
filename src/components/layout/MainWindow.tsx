@@ -141,6 +141,11 @@ const CloseWorktreeDialog = lazy(() =>
     default: mod.CloseWorktreeDialog,
   }))
 )
+const SessionHistoryModal = lazy(() =>
+  import('@/components/session-history/SessionHistoryModal').then(mod => ({
+    default: mod.SessionHistoryModal,
+  }))
+)
 import { FloatingDock } from '@/components/ui/floating-dock'
 import { Toaster } from '@/components/ui/sonner'
 import { BrowserSidePane } from '@/components/browser/BrowserSidePane'
@@ -409,6 +414,8 @@ export function MainWindow() {
   const shouldRenderArchivedModal = useRetainedMount(archivedModalOpen)
   const shouldRenderCloseWorktreeDialog = useRetainedMount(closeConfirmOpen)
   const shouldRenderGitHubDashboardModal = useRetainedMount(githubDashboardOpen)
+  const sessionHistoryOpen = useUIStore(state => state.sessionHistoryOpen)
+  const shouldRenderSessionHistoryModal = useRetainedMount(sessionHistoryOpen)
 
   // On Windows, use smaller border radius and remove it when maximized
   // On other platforms, use rounded-xl only in native app mode
@@ -615,6 +622,11 @@ export function MainWindow() {
       {shouldRenderGitHubDashboardModal && (
         <Suspense fallback={null}>
           <GitHubDashboardModal />
+        </Suspense>
+      )}
+      {shouldRenderSessionHistoryModal && (
+        <Suspense fallback={null}>
+          <SessionHistoryModal />
         </Suspense>
       )}
       <BranchConflictDialog />
