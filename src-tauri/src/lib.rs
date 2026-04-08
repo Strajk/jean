@@ -236,6 +236,12 @@ pub struct AppPreferences {
     pub gh_cli_source: String, // GitHub CLI source: "jean" (managed) or "path" (system PATH)
     #[serde(default)]
     pub expand_tool_calls_by_default: bool, // Expand all tool call collapsibles by default (default: false)
+    #[serde(default = "default_sidebar_group_by_status")]
+    pub sidebar_group_by_status: bool, // Group sidebar sessions by status headers (default: true)
+}
+
+fn default_sidebar_group_by_status() -> bool {
+    true
 }
 
 fn default_true() -> Option<bool> {
@@ -1471,6 +1477,7 @@ impl Default for AppPreferences {
             opencode_cli_source: default_cli_source(),
             gh_cli_source: default_cli_source(),
             expand_tool_calls_by_default: false,
+            sidebar_group_by_status: default_sidebar_group_by_status(),
         }
     }
 }
