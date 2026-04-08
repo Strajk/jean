@@ -448,6 +448,7 @@ function WorktreeSectionHeader({
                   <GitStatusBadges
                     behindCount={behindCount}
                     unpushedCount={unpushedCount}
+                    unpushedCommits={gitStatus?.unpushed_commits}
                     diffAdded={diffAdded}
                     diffRemoved={diffRemoved}
                     onPull={handlePull}
