@@ -230,6 +230,12 @@ pub struct AppPreferences {
     pub opencode_cli_source: String, // OpenCode CLI source: "jean" (managed) or "path" (system PATH)
     #[serde(default = "default_cli_source")]
     pub gh_cli_source: String, // GitHub CLI source: "jean" (managed) or "path" (system PATH)
+    #[serde(default = "default_sidebar_group_by_status")]
+    pub sidebar_group_by_status: bool, // Group sidebar sessions by status headers (default: true)
+}
+
+fn default_sidebar_group_by_status() -> bool {
+    true
 }
 
 fn default_true() -> Option<bool> {
@@ -1462,6 +1468,7 @@ impl Default for AppPreferences {
             codex_cli_source: default_cli_source(),
             opencode_cli_source: default_cli_source(),
             gh_cli_source: default_cli_source(),
+            sidebar_group_by_status: default_sidebar_group_by_status(),
         }
     }
 }
