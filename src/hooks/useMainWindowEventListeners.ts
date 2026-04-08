@@ -5,6 +5,7 @@ import { notify } from '@/lib/notifications'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import { useUIStore } from '@/store/ui-store'
 import { useProjectsStore } from '@/store/projects-store'
+import type { Project } from '@/types/projects'
 import { useChatStore } from '@/store/chat-store'
 import { isPanelTerminal, useTerminalStore } from '@/store/terminal-store'
 import { useBrowserStore } from '@/store/browser-store'
@@ -169,7 +170,8 @@ export function switchActiveTerminalTabByIndexForShortcut(
 function executeKeybindingAction(
   action: KeybindingAction,
   commandContext: ReturnType<typeof useCommandContext>,
-  queryClient: QueryClient
+  queryClient: QueryClient,
+  originalEvent?: { altKey?: boolean }
 ) {
   // Canvas-only actions: blocked when the session chat modal is open
   const CANVAS_ONLY_ACTIONS = new Set<KeybindingAction>([
@@ -629,6 +631,54 @@ function executeKeybindingAction(
       }
       break
     }
+    case 'toggle_all_worktrees_expanded': {
+      logger.debug('Keybinding: toggle_all_worktrees_expanded')
+      const projectsStore = useProjectsStore.getState()
+      const withProjects = originalEvent?.altKey === true
+      const isExpanded = projectsStore.expandedWorktreeIds.size > 0
+      if (isExpanded) {
+        projectsStore.collapseAllWorktrees()
+        if (withProjects) {
+          useProjectsStore.setState({
+            expandedProjectIds: new Set<string>(),
+            expandedFolderIds: new Set<string>(),
+          })
+        }
+      } else {
+        // Collect all worktree IDs from all non-folder projects in the query cache
+        const projects =
+          queryClient.getQueryData<Project[]>(
+            projectsQueryKeys.list()
+          ) ?? []
+        const allWorktreeIds: string[] = []
+        const allProjectIds: string[] = []
+        const allFolderIds: string[] = []
+        for (const project of projects) {
+          if ('is_folder' in project && project.is_folder) {
+            allFolderIds.push(project.id)
+            continue
+          }
+          allProjectIds.push(project.id)
+          const worktrees =
+            queryClient.getQueryData<{ id: string }[]>(
+              projectsQueryKeys.worktrees(project.id)
+            ) ?? []
+          for (const w of worktrees) {
+            allWorktreeIds.push(w.id)
+          }
+        }
+        if (allWorktreeIds.length > 0) {
+          projectsStore.expandAllWorktrees(allWorktreeIds)
+        }
+        if (withProjects) {
+          useProjectsStore.setState({
+            expandedProjectIds: new Set(allProjectIds),
+            expandedFolderIds: new Set(allFolderIds),
+          })
+        }
+      }
+      break
+    }
     case 'toggle_session_label': {
       logger.debug('Keybinding: toggle_session_label')
       // Works when a session is active (modal open or in session view) or on project canvas
@@ -827,6 +877,20 @@ export function useMainWindowEventListeners() {
               direction: matchedAction === 'scroll_chat_up' ? 'up' : 'down',
             },
           })
+        )
+        return
+      }
+
+      // [STRAJK FORK] Option+Cmd+Shift+W: toggle all worktrees AND projects
+      // (alt-modified variant of the plain toggle-all-worktrees shortcut).
+      if (shortcut === 'mod+shift+alt+w') {
+        e.preventDefault()
+        e.stopPropagation()
+        executeKeybindingAction(
+          'toggle_all_worktrees_expanded',
+          commandContext,
+          queryClient,
+          e
         )
         return
       }
