@@ -104,6 +104,7 @@ export const SessionListRow = forwardRef<HTMLDivElement, SessionCardProps>(
             <StatusIndicator
               status={config.indicatorStatus}
               variant={config.indicatorVariant}
+              title={config.label}
               className="h-2 w-2 shrink-0"
             />
 

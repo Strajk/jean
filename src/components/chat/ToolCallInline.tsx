@@ -135,7 +135,7 @@ export function ToolCallInline({
             <code className={TOOL_CALL_DETAIL_PILL_CLASS}>{detail}</code>
           ) : null}
           {isStreaming && isIncomplete ? (
-            <Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" />
+            <span title="Running"><Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" /></span>
           ) : (
             <ChevronRight
               className={cn(
@@ -362,7 +362,7 @@ export function StackedGroup({
             {summary}
           </span>
           {isStreaming && isIncomplete ? (
-            <Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" />
+            <span title="Running"><Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" /></span>
           ) : (
             <ChevronRight
               className={cn(
