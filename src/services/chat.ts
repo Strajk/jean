@@ -22,6 +22,7 @@ import type {
   ExecutionMode,
   EffortLevel,
   LabelData,
+  TextHighlight,
   QueuedMessage,
 } from '@/types/chat'
 
@@ -179,6 +180,7 @@ export async function prefetchSessions(
       Record<string, QuestionAnswer[]>
     > = {}
     const fixedFindingsUpdates: Record<string, Set<string>> = {}
+    const highlightsUpdates: Record<string, TextHighlight[]> = {}
     for (const session of sessions.sessions) {
       if (session.is_reviewing) {
         reviewingUpdates[session.id] = true
@@ -217,6 +219,9 @@ export async function prefetchSessions(
       }
       if (session.fixed_findings && session.fixed_findings.length > 0) {
         fixedFindingsUpdates[session.id] = new Set(session.fixed_findings)
+      }
+      if (session.highlights && session.highlights.length > 0) {
+        highlightsUpdates[session.id] = session.highlights
       }
     }
 
@@ -288,6 +293,12 @@ export async function prefetchSessions(
       storeUpdates.fixedReviewFindings = {
         ...currentState.fixedReviewFindings,
         ...fixedFindingsUpdates,
+      }
+    }
+    if (Object.keys(highlightsUpdates).length > 0) {
+      storeUpdates.sessionHighlights = {
+        ...currentState.sessionHighlights,
+        ...highlightsUpdates,
       }
     }
     if (Object.keys(storeUpdates).length > 0) {
