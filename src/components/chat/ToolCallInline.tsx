@@ -120,7 +120,7 @@ export function ToolCallInline({
             </code>
           ) : null}
           {isStreaming && isIncomplete ? (
-            <Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" />
+            <span title="Running"><Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" /></span>
           ) : (
             <ChevronRight
               className={cn(
@@ -347,7 +347,7 @@ export function StackedGroup({
           <Layers className="h-3.5 w-3.5 shrink-0" />
           <span className="font-medium">{summary}</span>
           {isStreaming && isIncomplete ? (
-            <Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" />
+            <span title="Running"><Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" /></span>
           ) : (
             <ChevronRight
               className={cn(
