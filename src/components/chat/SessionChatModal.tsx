@@ -594,9 +594,17 @@ export function SessionChatModal({
 
   // Sorted tab order: attention and active sessions first, review next,
   // idle/new empty sessions last. Within each tier, manual tab order wins.
+  // [STRAJK FORK] When sidebar_group_by_status is disabled, fall back to flat
+  // chronological (oldest first) so click never reorders and tiers vanish.
+  const groupByStatus = preferences?.sidebar_group_by_status ?? true
   const sortedCards = useMemo(() => {
+    if (!groupByStatus) {
+      return [...cards].sort(
+        (a, b) => a.session.created_at - b.session.created_at
+      )
+    }
     return sortSessionCardsForTabs(cards)
-  }, [cards])
+  }, [cards, groupByStatus])
 
   const handleSessionDragStart = useCallback(
     (e: React.DragEvent<HTMLButtonElement>, sessionId: string) => {

@@ -1074,6 +1074,7 @@ export interface AppPreferences {
   jean_mcp_enabled: boolean // Expose Jean MCP server to spawned CLIs through explicit CLI config entries
   jean_mcp_max_depth: number // Max recursive spawn depth via Jean MCP (default 3)
   jean_mcp_rate_limit_per_minute: number // Per-source rate limit for session-spawning tools (default 20)
+  sidebar_group_by_status: boolean // Group sidebar sessions by status headers (default: true)
 }
 
 export type TerminalBackgroundMode = 'auto' | 'light' | 'dark' | 'custom'
@@ -1904,4 +1905,5 @@ export const defaultPreferences: AppPreferences = {
   jean_mcp_enabled: true, // Default: enabled
   jean_mcp_max_depth: 3,
   jean_mcp_rate_limit_per_minute: 20,
+  sidebar_group_by_status: true, // Default: group by status
 }
