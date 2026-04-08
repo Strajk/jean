@@ -20,6 +20,13 @@ pub struct ActiveWorktreeInfo {
     pub pr_push_branch: Option<String>,
 }
 
+/// Short commit summary (hash + subject line)
+#[derive(Debug, Clone, Serialize)]
+pub struct CommitSummary {
+    pub hash: String,
+    pub message: String,
+}
+
 /// Git branch status relative to a base branch
 #[derive(Debug, Clone, Serialize)]
 pub struct GitBranchStatus {
@@ -46,6 +53,19 @@ pub struct GitBranchStatus {
     pub worktree_ahead_count: u32,
     /// Commits in HEAD not yet pushed to origin/{current_branch}
     pub unpushed_count: u32,
+    /// Short summaries of unpushed commits (hash + subject)
+    pub unpushed_commits: Vec<CommitSummary>,
+    /// Short summaries of incoming commits from origin/{base_branch} that aren't in HEAD
+    /// (i.e., what would be merged on pull). Mirrors `unpushed_commits` for the pull tooltip.
+    pub incoming_commits: Vec<CommitSummary>,
+    /// Short summaries of commits in origin/{base_branch} not in local base_branch
+    /// (i.e., what would be merged when pulling on the base branch itself). Used by the
+    /// project line's base-branch pull badge when there is no base session worktree.
+    pub base_branch_incoming_commits: Vec<CommitSummary>,
+    /// Short summaries of commits on the local base_branch that are not yet on origin
+    /// (i.e., what would be pushed if you pushed the base branch directly). Used by the
+    /// project line's base-branch push badge when there is no base session worktree.
+    pub base_branch_unpushed_commits: Vec<CommitSummary>,
 }
 
 /// Fetch the latest changes from origin for a specific branch
@@ -395,6 +415,37 @@ fn ref_exists(repo_path: &str, git_ref: &str) -> bool {
         .output()
         .map(|o| o.status.success())
         .unwrap_or(false)
+}
+
+/// List commit summaries (short hash + subject) between two refs
+/// Returns up to `limit` commits, newest first
+fn list_commits_between(repo_path: &str, from_ref: &str, to_ref: &str, limit: u32) -> Vec<CommitSummary> {
+    let output = silent_command("git")
+        .args([
+            "log",
+            "--format=%h %s",
+            &format!("-{limit}"),
+            &format!("{from_ref}..{to_ref}"),
+        ])
+        .current_dir(repo_path)
+        .output();
+
+    match output {
+        Ok(o) if o.status.success() => {
+            String::from_utf8_lossy(&o.stdout)
+                .lines()
+                .filter(|line| !line.is_empty())
+                .map(|line| {
+                    let (hash, message) = line.split_once(' ').unwrap_or((line, ""));
+                    CommitSummary {
+                        hash: hash.to_string(),
+                        message: message.to_string(),
+                    }
+                })
+                .collect()
+        }
+        _ => vec![],
+    }
 }
 
 /// Count commits between two refs
@@ -762,7 +813,8 @@ pub fn get_branch_status(info: &ActiveWorktreeInfo) -> Result<GitBranchStatus, S
     // Prefers the remembered PR push target (supports fork PRs where @{upstream} points
     // at origin but commits live on a fork remote). Falls back to @{upstream}, then
     // origin/{current_branch}.
-    let unpushed_count = if current_branch != *base_branch {
+    // Track which ref we're comparing against so we can list individual commits
+    let (unpushed_count, unpushed_from_ref) = if current_branch != *base_branch {
         if let (Some(remote), Some(branch)) = (&info.pr_push_remote, &info.pr_push_branch) {
             if remote == "origin" {
                 let _ = fetch_origin_branch(repo_path, branch);
@@ -771,15 +823,14 @@ pub fn get_branch_status(info: &ActiveWorktreeInfo) -> Result<GitBranchStatus, S
             }
             let push_ref = format!("{remote}/{branch}");
             if ref_exists(repo_path, &push_ref) {
-                count_commits_between(repo_path, &push_ref, "HEAD")
+                (count_commits_between(repo_path, &push_ref, "HEAD"), Some(push_ref))
             } else {
-                worktree_ahead_count
+                (worktree_ahead_count, Some(base_branch.clone()))
             }
         } else {
             let upstream_ref = get_upstream_ref(repo_path);
 
             if let Some(ref upstream) = upstream_ref {
-                // Fetch the remote for the upstream ref (e.g., "fork" from "fork/branch")
                 if let Some(remote) = upstream.split('/').next() {
                     if remote != "origin" {
                         let _ = fetch_origin_branch_from_remote(repo_path, remote, &current_branch);
@@ -787,22 +838,52 @@ pub fn get_branch_status(info: &ActiveWorktreeInfo) -> Result<GitBranchStatus, S
                         let _ = fetch_origin_branch(repo_path, &current_branch);
                     }
                 }
-                count_commits_between(repo_path, upstream, "HEAD")
+                (count_commits_between(repo_path, upstream, "HEAD"), Some(upstream.clone()))
             } else {
-                // No upstream configured — try origin/{current_branch}
                 let _ = fetch_origin_branch(repo_path, &current_branch);
                 let origin_current_ref = format!("origin/{current_branch}");
                 if ref_exists(repo_path, &origin_current_ref) {
-                    count_commits_between(repo_path, &origin_current_ref, "HEAD")
+                    (count_commits_between(repo_path, &origin_current_ref, "HEAD"), Some(origin_current_ref))
                 } else {
-                    // Never pushed — all worktree-unique commits are unpushed
-                    worktree_ahead_count
+                    (worktree_ahead_count, Some(base_branch.clone()))
                 }
             }
         }
     } else {
-        // On the base branch itself, unpushed = base_branch_ahead_count
-        base_branch_ahead_count
+        (base_branch_ahead_count, Some(origin_ref.clone()))
+    };
+
+    // Get unpushed commit summaries (piggybacks on existing polling, no extra round-trip)
+    let unpushed_commits = if unpushed_count > 0 {
+        if let Some(ref from) = unpushed_from_ref {
+            list_commits_between(repo_path, from, "HEAD", 20)
+        } else {
+            vec![]
+        }
+    } else {
+        vec![]
+    };
+
+    // Incoming commits = what would be merged if we pull (origin/base ahead of HEAD).
+    // Empty when behind_count is 0 to avoid a no-op git log call.
+    let incoming_commits = if behind_count > 0 {
+        list_commits_between(repo_path, "HEAD", &origin_ref, 20)
+    } else {
+        vec![]
+    };
+
+    // Base branch divergence commit lists — used by the project line's base-branch
+    // pull/push badges when there is no base session worktree to attribute the
+    // commits to. Cheap to compute since the counts are already gated above.
+    let base_branch_incoming_commits = if base_branch_behind_count > 0 {
+        list_commits_between(repo_path, base_branch, &origin_ref, 20)
+    } else {
+        vec![]
+    };
+    let base_branch_unpushed_commits = if base_branch_ahead_count > 0 {
+        list_commits_between(repo_path, &origin_ref, base_branch, 20)
+    } else {
+        vec![]
     };
 
     // Get current timestamp
@@ -827,6 +908,10 @@ pub fn get_branch_status(info: &ActiveWorktreeInfo) -> Result<GitBranchStatus, S
         base_branch_behind_count,
         worktree_ahead_count,
         unpushed_count,
+        unpushed_commits,
+        incoming_commits,
+        base_branch_incoming_commits,
+        base_branch_unpushed_commits,
     })
 }
 
@@ -852,6 +937,13 @@ mod tests {
             base_branch_behind_count: 0,
             worktree_ahead_count: 3,
             unpushed_count: 1,
+            unpushed_commits: vec![CommitSummary {
+                hash: "abc1234".to_string(),
+                message: "fix: something".to_string(),
+            }],
+            incoming_commits: vec![],
+            base_branch_incoming_commits: vec![],
+            base_branch_unpushed_commits: vec![],
         };
 
         let json = serde_json::to_string(&status).unwrap();

@@ -54,6 +54,14 @@ export interface GitStatusEvent {
   worktree_ahead_count: number
   /** Commits in HEAD not yet pushed to origin/current_branch */
   unpushed_count: number
+  /** Short summaries of unpushed commits (hash + subject) */
+  unpushed_commits: { hash: string; message: string }[]
+  /** Short summaries of incoming commits (origin/base ahead of HEAD) — what would be merged on pull */
+  incoming_commits: { hash: string; message: string }[]
+  /** Commits in origin/base_branch not yet in local base_branch — surfaced on the project line's pull badge */
+  base_branch_incoming_commits: { hash: string; message: string }[]
+  /** Commits in local base_branch not yet on origin — surfaced on the project line's push badge */
+  base_branch_unpushed_commits: { hash: string; message: string }[]
 }
 
 /**

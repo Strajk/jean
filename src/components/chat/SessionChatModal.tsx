@@ -915,6 +915,8 @@ export function SessionChatModal({
                 <GitStatusBadges
                   behindCount={behindCount}
                   unpushedCount={unpushedCount}
+                  unpushedCommits={gitStatus?.unpushed_commits}
+                  incomingCommits={gitStatus?.incoming_commits}
                   diffAdded={isMobile ? 0 : uncommittedAdded}
                   diffRemoved={isMobile ? 0 : uncommittedRemoved}
                   branchDiffAdded={isBase || isMobile ? 0 : branchDiffAdded}
