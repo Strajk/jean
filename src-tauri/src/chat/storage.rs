@@ -672,6 +672,9 @@ pub fn load_sessions(
                 archived_at: entry.archived_at,
                 archived_by_base_close: None,
                 last_opened_at: None,
+                source: None,
+                nightshift_check_id: None,
+                nightshift_run_id: None,
                 answered_questions: vec![],
                 submitted_answers: std::collections::HashMap::new(),
                 fixed_findings: vec![],
@@ -796,6 +799,9 @@ where
                 loaded_run_start_index: 0,
                 scheduled_wakeup: None,
                 highlights: vec![],
+                source: None,
+                nightshift_check_id: None,
+                nightshift_run_id: None,
             }
         };
         hydrated_sessions.push(session);

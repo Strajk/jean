@@ -19,6 +19,8 @@ import { SessionPalette } from '@/components/command-palette/SessionPalette'
 import { QuitConfirmationDialog } from './QuitConfirmationDialog'
 import { BranchConflictDialog } from '@/components/worktree/BranchConflictDialog'
 import { TeardownOutputDialog } from '@/components/worktree/TeardownOutputDialog'
+import { NightshiftRunsModal } from '@/components/nightshift/NightshiftRunsModal'
+import { useNightshiftEvents } from '@/hooks/useNightshiftEvents'
 
 // Lazy-loaded heavy modals (code splitting)
 const LeftSideBar = lazy(() =>
@@ -339,6 +341,9 @@ export function MainWindow() {
   // (not in sidebar) so events are received even when sidebar is closed
   useWorktreeEvents()
 
+  // Listen for Nightshift events (run progress, completion)
+  useNightshiftEvents()
+
   // Handle CMD+N keybinding to create new worktree
   useCreateWorktreeKeybinding()
 
@@ -564,6 +569,7 @@ export function MainWindow() {
           <RemotePickerModal />
         </Suspense>
       )}
+      <NightshiftRunsModal />
       {shouldRenderReleaseNotesDialog && (
         <Suspense fallback={null}>
           <ReleaseNotesDialog />
