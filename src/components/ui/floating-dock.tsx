@@ -3,7 +3,6 @@ import {
   useState,
   useEffect,
   useCallback,
-  useSyncExternalStore,
 } from 'react'
 import {
   LayoutDashboard,
@@ -50,7 +49,6 @@ import { copyToClipboard } from '@/lib/clipboard'
 import { useUIStore } from '@/store/ui-store'
 import { useChatStore } from '@/store/chat-store'
 import { useProjectsStore } from '@/store/projects-store'
-import { useTerminalStore } from '@/store/terminal-store'
 import { chatQueryKeys } from '@/services/chat'
 import { usePreferences } from '@/services/preferences'
 import { useWorktree, type GitHubRemote } from '@/services/projects'
@@ -92,7 +90,7 @@ function KeybindingHintsButton({
   side = 'top',
 }: {
   hints: KeybindingHint[]
-  side?: 'top' | 'right'
+  side?: 'top' | 'right' | 'bottom'
 }) {
   return (
     <Popover>
@@ -163,22 +161,9 @@ function CodexIcon({ className }: { className: string }) {
   )
 }
 
-const WIDE_BREAKPOINT = 1280
-const lgQuery = `(min-width: ${WIDE_BREAKPOINT}px)`
-function subscribeLg(cb: () => void) {
-  const mql = window.matchMedia(lgQuery)
-  mql.addEventListener('change', cb)
-  return () => mql.removeEventListener('change', cb)
-}
-function snapshotLg() {
-  return window.matchMedia(lgQuery).matches
-}
-const serverLg = () => true
-
 export function FloatingDock() {
   const chatToolbarMounted = useUIStore(state => state.chatToolbarMounted)
   const isMobile = useIsMobile()
-  const isLg = useSyncExternalStore(subscribeLg, snapshotLg, serverLg)
   const { data: preferences } = usePreferences()
   const queryClient = useQueryClient()
 
@@ -193,17 +178,6 @@ export function FloatingDock() {
     ? (sessionChatModalWorktreeId ?? activeWorktreeId ?? selectedWorktreeId)
     : (activeWorktreeId ?? selectedWorktreeId)
   const { data: worktree } = useWorktree(isMobile ? currentWorktreeId : null)
-  const modalTerminalDockMode = useTerminalStore(
-    state => state.modalTerminalDockMode
-  )
-  const modalTerminalHeight = useTerminalStore(
-    state => state.modalTerminalHeight
-  )
-  const modalTerminalOpen = useTerminalStore(state =>
-    currentWorktreeId
-      ? (state.modalTerminalOpen[currentWorktreeId] ?? false)
-      : false
-  )
   const activeSessionId = useChatStore(state =>
     currentWorktreeId ? state.activeSessionIds[currentWorktreeId] : undefined
   )
@@ -396,14 +370,11 @@ export function FloatingDock() {
   const isWebAccess = !isNativeApp()
   const showConnectionIndicator = isWebAccess && !isMobile
   const showKeybindingHints = isNativeApp() && !isMobile
-  const popoverSide = isMobile || isLg ? 'top' : ('right' as const)
-  const popoverAlign = isMobile ? 'end' : ('start' as const)
-  const bottomOffset =
-    sessionChatModalOpen &&
-    modalTerminalOpen &&
-    modalTerminalDockMode === 'bottom'
-      ? `calc(${modalTerminalHeight + 8}px + var(--safe-area-bottom))`
-      : 'calc(8px + var(--safe-area-bottom))'
+
+  // Titlebar-integrated: render inline buttons, no floating container
+  const btnClass = 'h-6 w-6 rounded-none text-foreground/70 hover:text-foreground'
+  const tooltipSide = 'bottom' as const
+  const menuAlign = 'start' as const
 
   // When the chat toolbar is mounted, the DockBurgerButton there exposes the
   // same menu — hide this corner dock to avoid duplicate UI and overlap with
@@ -411,10 +382,7 @@ export function FloatingDock() {
   if (chatToolbarMounted) return null
 
   return (
-    <div
-      className="absolute right-4 z-10 flex flex-row items-center gap-0.5 rounded-lg border border-border bg-muted/50 backdrop-blur-md px-1 py-0.5 transition-[bottom] duration-200 sm:left-4 sm:right-auto sm:flex-col sm:px-0.5 sm:py-1 xl:flex-row xl:px-1 xl:py-0.5"
-      style={{ bottom: bottomOffset }}
-    >
+    <>
       <DropdownMenu open={menuOpen} onOpenChange={handleQuickMenuOpenChange}>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -422,14 +390,14 @@ export function FloatingDock() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-muted-foreground hover:text-foreground"
+                className={btnClass}
               >
-                <Menu className="size-4" />
+                <Menu className="size-3.5" />
                 <span className="sr-only">Quick menu</span>
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
-          <TooltipContent side={popoverSide}>
+          <TooltipContent side={tooltipSide}>
             Menu{' '}
             <kbd className="ml-1 text-[0.625rem] opacity-60">
               {menuShortcut}
@@ -437,8 +405,8 @@ export function FloatingDock() {
           </TooltipContent>
         </Tooltip>
         <DropdownMenuContent
-          side={popoverSide}
-          align={popoverAlign}
+          side={tooltipSide}
+          align={menuAlign}
           className="min-w-[200px]"
           onEscapeKeyDown={e => e.stopPropagation()}
         >
@@ -520,14 +488,14 @@ export function FloatingDock() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-muted-foreground hover:text-foreground"
+            className={btnClass}
             onClick={() => useUIStore.getState().setCommandPaletteOpen(true)}
           >
-            <Command className="size-4" />
+            <Command className="size-3.5" />
             <span className="sr-only">Command Palette</span>
           </Button>
         </TooltipTrigger>
-        <TooltipContent side={popoverSide}>
+        <TooltipContent side={tooltipSide}>
           Command Palette{' '}
           <kbd className="ml-1 text-[0.625rem] opacity-60">⌘K</kbd>
         </TooltipContent>
@@ -540,17 +508,17 @@ export function FloatingDock() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 text-muted-foreground hover:text-foreground xl:w-[88px] xl:justify-center xl:px-2"
+                  size="sm"
+                  className="h-6 justify-center rounded-none px-1.5 text-foreground/70 hover:text-foreground"
                 >
-                  <activeUsageEntry.Icon className="size-4 shrink-0 xl:mr-1 xl:size-3.5" />
-                  <span className="hidden text-[11px] leading-none tabular-nums xl:inline">
+                  <activeUsageEntry.Icon className="mr-0.5 size-3 shrink-0" />
+                  <span className="text-[10px] leading-none tabular-nums">
                     {usageBadge.text}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
             </TooltipTrigger>
-            <TooltipContent side={popoverSide}>
+            <TooltipContent side={tooltipSide}>
               {activeUsageEntry.label} Session|Weekly{' '}
               <kbd className="ml-1 text-[0.625rem] opacity-60">
                 {usageShortcut}
@@ -558,8 +526,8 @@ export function FloatingDock() {
             </TooltipContent>
           </Tooltip>
           <DropdownMenuContent
-            side={popoverSide}
-            align={popoverAlign}
+            side={tooltipSide}
+            align={menuAlign}
             className="min-w-[180px]"
             onEscapeKeyDown={e => e.stopPropagation()}
           >
@@ -602,8 +570,8 @@ export function FloatingDock() {
 
       {showConnectionIndicator && <ConnectionIndicator />}
       {showKeybindingHints && (
-        <KeybindingHintsButton hints={CANVAS_HINTS} side={popoverSide} />
+        <KeybindingHintsButton hints={CANVAS_HINTS} side={tooltipSide} />
       )}
-    </div>
+    </>
   )
 }
