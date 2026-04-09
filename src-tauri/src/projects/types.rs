@@ -123,6 +123,9 @@ pub struct Project {
     /// IDs of linked projects for cross-project context sharing
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub linked_project_ids: Vec<String>,
+    /// Nightshift configuration for this project
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub nightshift_config: Option<crate::nightshift::types::NightshiftConfig>,
 }
 
 /// A git worktree created for a project
@@ -227,6 +230,59 @@ pub struct Worktree {
     /// Unix timestamp when worktree was last opened/viewed by the user
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_opened_at: Option<u64>,
+}
+
+impl Worktree {
+    /// Create a new Worktree with only the required fields; everything else defaults to None/0.
+    pub fn new(
+        id: String,
+        project_id: String,
+        name: String,
+        path: String,
+        branch: String,
+        order: u32,
+    ) -> Self {
+        Self {
+            id,
+            project_id,
+            name,
+            path,
+            branch,
+            created_at: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_secs(),
+            setup_output: None,
+            setup_script: None,
+            setup_success: None,
+            session_type: SessionType::Worktree,
+            pr_number: None,
+            pr_url: None,
+            issue_number: None,
+            linear_issue_identifier: None,
+            security_alert_number: None,
+            security_alert_url: None,
+            advisory_ghsa_id: None,
+            advisory_url: None,
+            cached_pr_status: None,
+            cached_check_status: None,
+            cached_behind_count: None,
+            cached_ahead_count: None,
+            cached_status_at: None,
+            cached_uncommitted_added: None,
+            cached_uncommitted_removed: None,
+            cached_branch_diff_added: None,
+            cached_branch_diff_removed: None,
+            cached_base_branch_ahead_count: None,
+            cached_base_branch_behind_count: None,
+            cached_worktree_ahead_count: None,
+            cached_unpushed_count: None,
+            order,
+            label: None,
+            archived_at: None,
+            last_opened_at: None,
+        }
+    }
 }
 
 /// Container for all persisted project data
