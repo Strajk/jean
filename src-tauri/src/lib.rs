@@ -50,6 +50,7 @@ pub mod jean_mcp_config;
 pub mod jean_mcp_core;
 pub mod jean_mcp_socket;
 pub mod jean_mcp_stdio;
+mod nightshift;
 mod opencode_cli;
 mod opencode_server;
 mod opinionated;
@@ -3826,6 +3827,9 @@ pub fn run() {
                 }
             });
 
+            // Start the nightshift scheduler (checks every minute)
+            nightshift::engine::start_scheduler(app.handle().clone());
+
             log::info!("Startup: setup() completed in {:?}", setup_start.elapsed());
             Ok(())
         })
@@ -4213,6 +4217,16 @@ pub fn run() {
             opencode_server::start_opencode_server,
             opencode_server::stop_opencode_server,
             opencode_server::get_opencode_server_status,
+            // Nightshift commands
+            nightshift::nightshift_list_checks,
+            nightshift::nightshift_get_config,
+            nightshift::nightshift_save_config,
+            nightshift::nightshift_start_run,
+            nightshift::nightshift_cancel_run,
+            nightshift::nightshift_get_runs,
+            nightshift::nightshift_get_run,
+            nightshift::nightshift_report_check_done,
+            nightshift::nightshift_get_default_prompt,
         ])
         .build(tauri::generate_context!())
         .expect("error building tauri application")

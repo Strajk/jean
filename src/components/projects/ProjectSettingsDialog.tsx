@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { Bot, Settings, Plug, FileJson } from 'lucide-react'
+import { Bot, Settings, Plug, FileJson, Moon } from 'lucide-react'
 import { ModalCloseButton } from '@/components/ui/modal-close-button'
 import {
   Breadcrumb,
@@ -38,14 +38,21 @@ import { GeneralPane } from './panes/GeneralPane'
 import { McpServersPane } from './panes/McpServersPane'
 import { JeanJsonPane } from './panes/JeanJsonPane'
 import { AutoFixPane } from './panes/AutoFixPane'
+import { NightshiftPane } from './panes/NightshiftPane'
 
-type ProjectSettingsPane = 'general' | 'mcp-servers' | 'jean-json' | 'auto-fix'
+type ProjectSettingsPane =
+  | 'general'
+  | 'mcp-servers'
+  | 'jean-json'
+  | 'auto-fix'
+  | 'nightshift'
 
 const navigationItems = [
   { id: 'general' as const, name: 'General', icon: Settings },
   { id: 'auto-fix' as const, name: 'Mr. Robot', icon: Bot },
   { id: 'mcp-servers' as const, name: 'MCP Servers', icon: Plug },
   { id: 'jean-json' as const, name: 'Jean.json', icon: FileJson },
+  { id: 'nightshift' as const, name: 'Nightshift (Experimental)', icon: Moon },
 ]
 
 const getPaneTitle = (pane: ProjectSettingsPane): string => {
@@ -58,6 +65,8 @@ const getPaneTitle = (pane: ProjectSettingsPane): string => {
       return 'MCP Servers'
     case 'jean-json':
       return 'Jean.json'
+    case 'nightshift':
+      return 'Nightshift'
   }
 }
 
@@ -216,6 +225,12 @@ function ProjectSettingsDialogContent({
                   )}
                   {activePane === 'jean-json' && (
                     <JeanJsonPane
+                      projectId={safeProjectId}
+                      projectPath={projectPath}
+                    />
+                  )}
+                  {activePane === 'nightshift' && (
+                    <NightshiftPane
                       projectId={safeProjectId}
                       projectPath={projectPath}
                     />

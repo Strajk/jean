@@ -497,6 +497,7 @@ pub async fn add_project(
         linear_team_id: None,
         linked_project_ids: Vec::new(),
         auto_fix_settings: None,
+        nightshift_config: None,
     };
 
     data.add_project(project.clone());
@@ -656,6 +657,7 @@ pub async fn init_project(
         linear_team_id: None,
         linked_project_ids: Vec::new(),
         auto_fix_settings: None,
+        nightshift_config: None,
     };
 
     data.add_project(project.clone());
@@ -712,6 +714,7 @@ pub async fn clone_project(
         linear_team_id: None,
         linked_project_ids: Vec::new(),
         auto_fix_settings: None,
+        nightshift_config: None,
     };
 
     data.add_project(project.clone());
@@ -10033,6 +10036,7 @@ pub async fn create_folder(
         linear_team_id: None,
         linked_project_ids: Vec::new(),
         auto_fix_settings: None,
+        nightshift_config: None,
     };
 
     data.add_project(folder.clone());
