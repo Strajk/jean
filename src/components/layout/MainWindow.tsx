@@ -148,7 +148,6 @@ const SessionHistoryModal = lazy(() =>
     default: mod.SessionHistoryModal,
   }))
 )
-import { FloatingDock } from '@/components/ui/floating-dock'
 import { Toaster } from '@/components/ui/sonner'
 import { BrowserSidePane } from '@/components/browser/BrowserSidePane'
 import { BrowserPanel } from '@/components/browser/BrowserPanel'
@@ -491,7 +490,6 @@ export function MainWindow() {
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <div className="relative min-w-0 flex-1 overflow-hidden">
             <MainWindowContent />
-            <FloatingDock />
           </div>
           {/* Browser bottom panel - native-only, pinned to bottom */}
           <BrowserPanel />
