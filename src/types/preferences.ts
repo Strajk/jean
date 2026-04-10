@@ -1032,6 +1032,7 @@ export interface AppPreferences {
   fast_mode_models: string[] // Model keys ("backend:baseModel") with fast tier last enabled
 
   confirm_session_close: boolean // Show confirmation dialog before closing sessions/worktrees
+  esc_closes_session: boolean // Whether pressing Escape closes the current session modal
   default_execution_mode: ExecutionMode // Default execution mode for new sessions: 'plan', 'build', or 'yolo'
   default_backend: CliBackend // Default CLI backend for new sessions: 'claude', 'codex', 'opencode', 'cursor', 'pi', or 'commandcode'
   default_new_session_kind: NewSessionKind // Default action for CMD+T: 'chat', 'terminal', or a CLI backend
@@ -1864,6 +1865,7 @@ export const defaultPreferences: AppPreferences = {
   favorite_models: [],
   fast_mode_models: [],
   confirm_session_close: true, // Default: enabled (show confirmation)
+  esc_closes_session: true, // Default: Escape closes session modal
   default_execution_mode: 'plan', // Default: plan mode
   default_backend: 'claude', // Default: Claude
   default_new_session_kind: 'chat', // Default: Jean Chat for CMD+T
