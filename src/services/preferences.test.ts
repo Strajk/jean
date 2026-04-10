@@ -164,6 +164,7 @@ describe('preferences service', () => {
         expand_tool_calls_by_default: false,
         sidebar_group_by_status: true,
         terminal_word_wrap: true,
+        esc_closes_session: true,
       }
       vi.mocked(invoke).mockResolvedValueOnce(mockPreferences)
 
@@ -293,6 +294,7 @@ describe('preferences service', () => {
         expand_tool_calls_by_default: false,
         sidebar_group_by_status: true,
         terminal_word_wrap: true,
+        esc_closes_session: true,
       }
       vi.mocked(invoke).mockResolvedValueOnce(prefsWithOldBinding)
 
@@ -395,6 +397,7 @@ describe('preferences service', () => {
         expand_tool_calls_by_default: false,
         sidebar_group_by_status: true,
         terminal_word_wrap: true,
+        esc_closes_session: true,
       }
       vi.mocked(invoke).mockResolvedValueOnce(prefsWithDeprecatedFastModel)
 
@@ -497,6 +500,7 @@ describe('preferences service', () => {
         expand_tool_calls_by_default: false,
         sidebar_group_by_status: true,
         terminal_word_wrap: true,
+        esc_closes_session: true,
       }
 
       const { result } = renderHook(() => useSavePreferences(), {
@@ -601,6 +605,7 @@ describe('preferences service', () => {
         expand_tool_calls_by_default: false,
         sidebar_group_by_status: true,
         terminal_word_wrap: true,
+        esc_closes_session: true,
       }
 
       const { result } = renderHook(() => useSavePreferences(), {
@@ -705,6 +710,7 @@ describe('preferences service', () => {
         expand_tool_calls_by_default: false,
         sidebar_group_by_status: true,
         terminal_word_wrap: true,
+        esc_closes_session: true,
       }
 
       const { result } = renderHook(() => useSavePreferences(), {
@@ -807,6 +813,7 @@ describe('preferences service', () => {
         expand_tool_calls_by_default: false,
         sidebar_group_by_status: true,
         terminal_word_wrap: true,
+        esc_closes_session: true,
       }
 
       const { result } = renderHook(() => useSavePreferences(), {
