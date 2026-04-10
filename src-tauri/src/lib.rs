@@ -237,6 +237,8 @@ pub struct AppPreferences {
     pub sidebar_group_by_status: bool, // Group sidebar sessions by status headers (default: true)
     #[serde(default = "default_terminal_word_wrap")]
     pub terminal_word_wrap: bool, // Terminal word wrap (default: true, false = horizontal scroll with wide cols)
+    #[serde(default)]
+    pub expand_tool_calls: bool, // Expand tool call groups by default in chat (default: false)
 }
 
 fn default_sidebar_group_by_status() -> bool {
@@ -1484,6 +1486,7 @@ impl Default for AppPreferences {
             gh_cli_source: default_cli_source(),
             sidebar_group_by_status: default_sidebar_group_by_status(),
             terminal_word_wrap: default_terminal_word_wrap(),
+            expand_tool_calls: false,
         }
     }
 }
@@ -3294,6 +3297,7 @@ pub fn run() {
             nightshift::nightshift_get_config,
             nightshift::nightshift_save_config,
             nightshift::nightshift_start_run,
+            nightshift::nightshift_start_check,
             nightshift::nightshift_cancel_run,
             nightshift::nightshift_get_runs,
             nightshift::nightshift_get_run,
