@@ -959,6 +959,7 @@ export interface AppPreferences {
   default_provider: string | null // Default provider profile name (null = Anthropic direct)
 
   confirm_session_close: boolean // Show confirmation dialog before closing sessions/worktrees
+  esc_closes_session: boolean // Whether pressing Escape closes the current session modal
   default_execution_mode: ExecutionMode // Default execution mode for new sessions: 'plan', 'build', or 'yolo'
   default_backend: CliBackend // Default CLI backend for new sessions: 'claude', 'codex', 'opencode', or 'cursor'
   selected_codex_model: CodexModel // Default Codex model
@@ -1556,6 +1557,7 @@ export const defaultPreferences: AppPreferences = {
   custom_cli_profiles: [],
   default_provider: null,
   confirm_session_close: true, // Default: enabled (show confirmation)
+  esc_closes_session: true, // Default: Escape closes session modal
   default_execution_mode: 'plan', // Default: plan mode
   default_backend: 'claude', // Default: Claude
   selected_codex_model: 'gpt-5.4', // Default: latest Codex model
