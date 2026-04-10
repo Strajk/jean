@@ -70,8 +70,8 @@
     "macOS": {
       "frameworks": [],
       "minimumSystemVersion": "10.15",
-      "signingIdentity": "Developer ID Application: coolLabs Solutions Korlatolt Felelossegu Tarsasag (8D3F6CQFS8)",
-      "providerShortName": "8D3F6CQFS8",
+      "signingIdentity": "-",
+      "providerShortName": "",
       "entitlements": null,
       "exceptionDomain": ""
     },
