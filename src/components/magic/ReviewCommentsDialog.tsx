@@ -21,6 +21,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Markdown } from '@/components/ui/markdown'
 import { useUIStore } from '@/store/ui-store'
 import { useProjectsStore } from '@/store/projects-store'
 import { useChatStore } from '@/store/chat-store'
@@ -463,9 +464,9 @@ ${c.body}`
                                 @{comment.author.login}
                               </span>
                             </div>
-                            <p className="mt-1 text-sm text-foreground/90 whitespace-pre-wrap">
+                            <Markdown className="mt-1 text-sm text-foreground/90">
                               {comment.body}
-                            </p>
+                            </Markdown>
                             <button
                               className="mt-1 flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                               onClick={() => toggleExpand(index)}
@@ -534,9 +535,9 @@ ${c.body}`
                                   )}
                             </span>
                           </div>
-                          <p className="mt-1 text-sm text-foreground/90 whitespace-pre-wrap">
-                            {item.data.body}
-                          </p>
+                          <Markdown className="mt-1 text-sm text-foreground/90">
+                            {item.data.body ?? ''}
+                          </Markdown>
                         </div>
                       </div>
                     </div>
