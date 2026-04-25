@@ -240,6 +240,8 @@ pub struct AppPreferences {
     pub gh_cli_source: String, // GitHub CLI source: "jean" (managed) or "path" (system PATH)
     #[serde(default)]
     pub expand_tool_calls_by_default: bool, // Expand all tool call collapsibles by default (default: false)
+    #[serde(default)]
+    pub invert_user_messages: bool, // Invert user message color in light theme for higher contrast (default: false)
     #[serde(default = "default_sidebar_group_by_status")]
     pub sidebar_group_by_status: bool, // Group sidebar sessions by status headers (default: true)
     #[serde(default = "default_terminal_word_wrap")]
@@ -1499,6 +1501,7 @@ impl Default for AppPreferences {
             opencode_cli_source: default_cli_source(),
             gh_cli_source: default_cli_source(),
             expand_tool_calls_by_default: false,
+            invert_user_messages: false,
             sidebar_group_by_status: default_sidebar_group_by_status(),
             terminal_word_wrap: default_terminal_word_wrap(),
         }

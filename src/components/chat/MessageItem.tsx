@@ -52,6 +52,7 @@ import {
 } from './message-content-utils'
 import { hasQuestionAnswerOutput } from '@/types/chat'
 import { MessageSettingsBadges } from '@/components/chat/MessageSettingsBadges'
+import { usePreferences } from '@/services/preferences'
 
 interface MessageItemProps {
   /** The message to render */
@@ -167,6 +168,9 @@ export const MessageItem = memo(function MessageItem({
   hideApproveButtons,
   durationMs,
 }: MessageItemProps) {
+  const { data: preferences } = usePreferences()
+  const invertUserMessages = preferences?.invert_user_messages ?? false
+
   // Only show Approve button for the last message with ExitPlanMode
   const isLatestPlanRequest = messageIndex === lastPlanMessageIndex
 
@@ -776,10 +780,28 @@ export const MessageItem = memo(function MessageItem({
               <TooltipContent>Copy to clipboard</TooltipContent>
             </Tooltip>
           )}
-          <div className="text-foreground border border-border rounded-lg px-3 py-2 bg-muted/20 min-w-0 break-words">
+          <div
+            className={cn(
+              'border rounded-lg px-3 py-2 min-w-0 break-words',
+              // dark: classes always undo the inversion under dark theme,
+              // so light theme is the only state where the swap is visible
+              invertUserMessages
+                ? 'bg-foreground text-background border-foreground dark:bg-muted/20 dark:text-foreground dark:border-border'
+                : 'bg-muted/20 text-foreground border-border'
+            )}
+          >
             {messageBoxContent}
             {message.model && (
-              <div className="mt-1.5">
+              <div
+                className={cn(
+                  'mt-1.5',
+                  // Badges use text-muted-foreground/50 which is invisible on
+                  // the inverted dark fill in light theme — force a light tint
+                  // for descendants, then dark: lets them keep original look.
+                  invertUserMessages &&
+                    '[&_*]:!text-background/60 dark:[&_*]:!text-muted-foreground/50'
+                )}
+              >
                 <MessageSettingsBadges
                   model={message.model}
                   executionMode={message.execution_mode}

@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
@@ -196,6 +197,22 @@ export const AppearancePane: React.FC = () => {
                 ))}
               </SelectContent>
             </Select>
+          </InlineField>
+
+          <InlineField
+            label="Invert user messages (light theme)"
+            description="Render user messages with a dark background and light text in light mode for higher contrast. Dark mode is unchanged."
+          >
+            <Switch
+              checked={preferences?.invert_user_messages ?? false}
+              onCheckedChange={checked => {
+                if (preferences) {
+                  patchPreferences.mutate({
+                    invert_user_messages: checked,
+                  })
+                }
+              }}
+            />
           </InlineField>
         </div>
       </SettingsSection>
