@@ -985,6 +985,7 @@ export interface AppPreferences {
   opencode_cli_source: 'jean' | 'path' // OpenCode CLI source: 'jean' (managed) or 'path' (system PATH)
   gh_cli_source: 'jean' | 'path' // GitHub CLI source: 'jean' (managed) or 'path' (system PATH)
   expand_tool_calls_by_default: boolean // Expand all tool call collapsibles by default
+  invert_user_messages: boolean // Invert user message color in light theme for higher contrast (default: false)
   sidebar_group_by_status: boolean // Group sidebar sessions by status headers (default: true)
   terminal_word_wrap: boolean // Terminal word wrap (default: true, false = horizontal scroll)
 }
@@ -1583,6 +1584,7 @@ export const defaultPreferences: AppPreferences = {
   opencode_cli_source: 'jean', // Default: Jean-managed
   gh_cli_source: 'jean', // Default: Jean-managed
   expand_tool_calls_by_default: false, // Default: collapsed
+  invert_user_messages: false, // Default: disabled (user messages keep theme-default styling)
   sidebar_group_by_status: true, // Default: group by status
   terminal_word_wrap: true, // Default: word wrap enabled
 }
