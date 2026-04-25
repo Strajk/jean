@@ -389,6 +389,22 @@ export const AppearancePane: React.FC = () => {
               </div>
             </InlineField>
           )}
+
+          <InlineField
+            label="Invert user messages (light theme)"
+            description="Render user messages with a dark background and light text in light mode for higher contrast. Dark mode is unchanged."
+          >
+            <Switch
+              checked={preferences?.invert_user_messages ?? false}
+              onCheckedChange={checked => {
+                if (preferences) {
+                  patchPreferences.mutate({
+                    invert_user_messages: checked,
+                  })
+                }
+              }}
+            />
+          </InlineField>
         </div>
       </SettingsSection>
 

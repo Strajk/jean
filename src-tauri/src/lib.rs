@@ -345,6 +345,8 @@ pub struct AppPreferences {
     pub jean_mcp_max_depth: u32, // Max recursive spawn depth via Jean MCP (default 3)
     #[serde(default = "default_jean_mcp_rate_limit")]
     pub jean_mcp_rate_limit_per_minute: u32, // Per-source rate limit for session-spawning tools (default 20)
+    #[serde(default)]
+    pub invert_user_messages: bool, // Invert user message color in light theme for higher contrast (default: false)
     #[serde(default = "default_sidebar_group_by_status")]
     pub sidebar_group_by_status: bool, // Group sidebar sessions by status headers (default: true)
     #[serde(default = "default_terminal_word_wrap")]
@@ -1849,6 +1851,7 @@ impl Default for AppPreferences {
             jean_mcp_enabled: default_jean_mcp_enabled(),
             jean_mcp_max_depth: default_jean_mcp_max_depth(),
             jean_mcp_rate_limit_per_minute: default_jean_mcp_rate_limit(),
+            invert_user_messages: false,
             sidebar_group_by_status: default_sidebar_group_by_status(),
             terminal_word_wrap: default_terminal_word_wrap(),
         }

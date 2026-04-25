@@ -1075,6 +1075,7 @@ export interface AppPreferences {
   jean_mcp_enabled: boolean // Expose Jean MCP server to spawned CLIs through explicit CLI config entries
   jean_mcp_max_depth: number // Max recursive spawn depth via Jean MCP (default 3)
   jean_mcp_rate_limit_per_minute: number // Per-source rate limit for session-spawning tools (default 20)
+  invert_user_messages: boolean // Invert user message color in light theme for higher contrast (default: false)
   sidebar_group_by_status: boolean // Group sidebar sessions by status headers (default: true)
   terminal_word_wrap: boolean // Terminal word wrap (default: true, false = horizontal scroll)
 }
@@ -1908,6 +1909,7 @@ export const defaultPreferences: AppPreferences = {
   jean_mcp_enabled: true, // Default: enabled
   jean_mcp_max_depth: 3,
   jean_mcp_rate_limit_per_minute: 20,
+  invert_user_messages: false, // Default: disabled (user messages keep theme-default styling)
   sidebar_group_by_status: true, // Default: group by status
   terminal_word_wrap: true, // Default: word wrap enabled
 }
