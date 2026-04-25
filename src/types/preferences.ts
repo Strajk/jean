@@ -7,7 +7,15 @@ export type CodexGoalExecutionMode = Extract<ExecutionMode, 'build' | 'yolo'>
 // =============================================================================
 // Notification Sounds
 // =============================================================================
-export type NotificationSound = 'none' | 'workwork' | 'jobsdone'
+// Static sound IDs bundled with Jean. System sounds are enumerated at runtime
+// from the OS and identified by a `system:<id>` string — kept out of this union
+// so a future OS update can't silently collide with a bundled-sound id.
+export type CustomNotificationSound = 'workwork' | 'jobsdone'
+export type SystemNotificationSound = `system:${string}`
+export type NotificationSound =
+  | 'none'
+  | CustomNotificationSound
+  | SystemNotificationSound
 export type TerminalRenderer = 'xterm' | 'ghostty-web'
 export type TerminalFont =
   | 'jetbrains-mono'
@@ -16,11 +24,10 @@ export type TerminalFont =
   | 'sf-mono'
   | 'system'
 
-export const notificationSoundOptions: {
-  value: NotificationSound
+export const customNotificationSoundOptions: {
+  value: CustomNotificationSound
   label: string
 }[] = [
-  { value: 'none', label: 'None' },
   { value: 'workwork', label: 'Work Work' },
   { value: 'jobsdone', label: "Job's Done" },
 ]
