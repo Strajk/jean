@@ -1187,6 +1187,15 @@ pub async fn dispatch_command(
             crate::send_native_notification(app.clone(), title, body).await?;
             Ok(Value::Null)
         }
+        "list_system_sounds" => {
+            let result = crate::system_sounds::list_system_sounds();
+            to_value(result)
+        }
+        "play_system_sound" => {
+            let id: String = from_field(&args, "id")?;
+            crate::system_sounds::play_system_sound(id)?;
+            Ok(Value::Null)
+        }
         "save_emergency_data" => {
             let filename: String = from_field(&args, "filename")?;
             let data: Value = from_field(&args, "data")?;

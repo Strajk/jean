@@ -5,13 +5,17 @@
 
 import {
   type NotificationSound,
-  notificationSoundOptions,
+  type CustomNotificationSound,
+  customNotificationSoundOptions,
 } from '../types/preferences'
+import { invoke } from './transport'
 
-const notificationSoundAssetMap: Partial<Record<NotificationSound, string>> = {
+const customSoundAssetMap: Record<CustomNotificationSound, string> = {
   workwork: '/sounds/work-work.mp3',
   jobsdone: '/sounds/jobs-done.mp3',
 }
+
+const SYSTEM_SOUND_PREFIX = 'system:'
 
 // Single audio instance to prevent overlapping sounds
 let currentAudio: HTMLAudioElement | null = null
@@ -26,7 +30,19 @@ let audioContext: AudioContext | null = null
 export function playNotificationSound(sound: NotificationSound): void {
   if (sound === 'none') return
 
-  const soundSrc = notificationSoundAssetMap[sound]
+  if (sound.startsWith(SYSTEM_SOUND_PREFIX)) {
+    // System sounds are handed off to the OS — afplay/PowerShell/paplay — because
+    // the WebView can't decode AIFF (and we don't want to ship per-codec polyfills).
+    const id = sound.slice(SYSTEM_SOUND_PREFIX.length)
+    invoke<null>('play_system_sound', { id }).catch(() => {
+      // Sound id not found on this OS (e.g. saved on macOS, opened on Linux) — fall
+      // back to a synthesized beep so the user still gets some audio cue.
+      playSystemBeep()
+    })
+    return
+  }
+
+  const soundSrc = customSoundAssetMap[sound as CustomNotificationSound]
   if (!soundSrc) {
     playSystemBeep()
     return
@@ -84,16 +100,18 @@ function playSystemBeep(): void {
 }
 
 // Cache for preloaded audio elements
-const audioCache = new Map<NotificationSound, HTMLAudioElement>()
+const audioCache = new Map<CustomNotificationSound, HTMLAudioElement>()
 
 /**
- * Preload all sound files to ensure instant playback.
+ * Preload all bundled sound files to ensure instant playback.
  * Call this on app startup.
+ *
+ * System sounds are not preloaded — playback goes through the OS, which already
+ * caches its own alert sounds, and there can be dozens of them.
  */
 export function preloadAllSounds(): void {
-  for (const option of notificationSoundOptions) {
-    if (option.value === 'none') continue
-    const soundSrc = notificationSoundAssetMap[option.value]
+  for (const option of customNotificationSoundOptions) {
+    const soundSrc = customSoundAssetMap[option.value]
     if (!soundSrc) continue
 
     const audio = new Audio(soundSrc)
