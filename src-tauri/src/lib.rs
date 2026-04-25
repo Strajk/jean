@@ -22,6 +22,7 @@ mod opencode_server;
 mod opinionated;
 mod platform;
 mod projects;
+mod system_sounds;
 mod terminal;
 
 // Validation functions
@@ -3120,6 +3121,8 @@ pub fn run() {
             load_ui_state,
             save_ui_state,
             send_native_notification,
+            system_sounds::list_system_sounds,
+            system_sounds::play_system_sound,
             save_emergency_data,
             load_emergency_data,
             cleanup_old_recovery_files,
