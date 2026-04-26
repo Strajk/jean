@@ -1,6 +1,7 @@
-import { memo, useCallback } from 'react'
-import { Copy } from 'lucide-react'
+import { memo, useCallback, useState } from 'react'
+import { Check, Copy } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { copyToClipboard } from '@/lib/clipboard'
 import { normalizePath } from '@/lib/path-utils'
 import { Markdown } from '@/components/ui/markdown'
 import type {
@@ -262,6 +263,14 @@ export const MessageItem = memo(function MessageItem({
   const handleCopyToInput = useCallback(() => {
     onCopyToInput?.(message)
   }, [onCopyToInput, message])
+
+  // Copy assistant response markdown to clipboard, with brief icon-swap feedback
+  const [copied, setCopied] = useState(false)
+  const handleCopyMessage = useCallback(() => {
+    void copyToClipboard(message.content)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }, [message.content])
 
   // Content for the message box (shared between user and assistant)
   const resolvedPlan = resolvePlanContent({
@@ -807,6 +816,29 @@ export const MessageItem = memo(function MessageItem({
         <span className="text-xs text-muted-foreground/50 italic">
           (cancelled)
         </span>
+      )}
+
+      {message.role === 'assistant' && showContent && (
+        <div className="mt-1 flex items-center gap-2 min-h-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={handleCopyMessage}
+                className="p-0.5 rounded text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/50 transition-colors cursor-pointer"
+              >
+                {copied ? (
+                  <Check className="size-3" />
+                ) : (
+                  <Copy className="size-3" />
+                )}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {copied ? 'Copied' : 'Copy message as markdown'}
+            </TooltipContent>
+          </Tooltip>
+        </div>
       )}
     </>
   )
