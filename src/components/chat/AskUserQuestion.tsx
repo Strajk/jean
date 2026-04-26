@@ -265,7 +265,7 @@ export function AskUserQuestion({
   // Render full question content (used both inline and in collapsible)
   function renderQuestionContent() {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         {/* Intro text (e.g., "Before we continue, I have some questions:") */}
         {introText && (
           <div className="text-muted-foreground">
@@ -282,20 +282,20 @@ export function AskUserQuestion({
             <div key={qIndex}>
               {/* Header (optional) */}
               {question.header && (
-                <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                   {question.header}
                 </div>
               )}
 
               {/* Question text */}
-              <div className="mb-3 font-medium text-foreground">
+              <div className="mb-1.5 font-medium text-foreground">
                 <Markdown>{question.question}</Markdown>
               </div>
 
               {/* Options - indented section */}
-              <div className="ml-3 space-y-3">
+              <div className="ml-3 space-y-1.5">
                 {readOnly ? (
-                  <div className="space-y-2.5">
+                  <div className="space-y-0.5">
                     {question.options.map((option, oIndex) => {
                       const isSelected =
                         answer?.selectedOptions.includes(oIndex) ?? false
@@ -303,28 +303,28 @@ export function AskUserQuestion({
                         <div
                           key={oIndex}
                           className={cn(
-                            'flex items-start gap-2.5 rounded-md border px-2.5 py-2',
+                            'flex items-start gap-2 rounded-md border px-2 py-1',
                             isSelected
                               ? 'border-green-500/40 bg-green-500/10 text-foreground'
                               : 'border-transparent bg-muted/25 text-muted-foreground'
                           )}
                         >
                           {isSelected ? (
-                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
+                            <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
                           ) : (
-                            <Circle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/60" />
+                            <Circle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
                           )}
                           <div className="flex flex-1 flex-col items-start">
                             <span
                               className={cn(
-                                'font-medium',
+                                'font-medium leading-tight',
                                 !isSelected && 'text-muted-foreground'
                               )}
                             >
                               <Markdown>{option.label}</Markdown>
                             </span>
                             {option.description && (
-                              <span className="mt-1 text-xs text-muted-foreground">
+                              <span className="text-xs text-muted-foreground leading-tight">
                                 <Markdown>{option.description}</Markdown>
                               </span>
                             )}
@@ -334,12 +334,12 @@ export function AskUserQuestion({
                     })}
                   </div>
                 ) : question.multiSelect ? (
-                  <div className="space-y-2.5">
+                  <div className="space-y-0.5">
                     {question.options.map((option, oIndex) => (
                       <div
                         key={oIndex}
                         className={cn(
-                          'flex items-start gap-2.5 rounded-md border px-2.5 py-2 transition-colors',
+                          'flex items-start gap-2 rounded-md border px-2 py-1 transition-colors',
                           answer?.selectedOptions.includes(oIndex)
                             ? 'border-green-500/40 bg-green-500/10'
                             : 'border-transparent bg-muted/25 hover:bg-muted/40'
@@ -355,13 +355,13 @@ export function AskUserQuestion({
                         />
                         <Label
                           htmlFor={`${toolCallId}-q${qIndex}-o${oIndex}`}
-                          className="flex flex-1 cursor-pointer flex-col items-start"
+                          className="flex flex-1 cursor-pointer flex-col items-start gap-0.5"
                         >
-                          <span className="font-medium">
+                          <span className="font-medium leading-tight">
                             <Markdown>{option.label}</Markdown>
                           </span>
                           {option.description && (
-                            <span className="mt-1 text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground leading-tight">
                               <Markdown>{option.description}</Markdown>
                             </span>
                           )}
@@ -375,13 +375,13 @@ export function AskUserQuestion({
                     onValueChange={value =>
                       selectOption(qIndex, parseInt(value, 10))
                     }
-                    className="space-y-2.5"
+                    className="gap-0.5"
                   >
                     {question.options.map((option, oIndex) => (
                       <div
                         key={oIndex}
                         className={cn(
-                          'flex items-start gap-2.5 rounded-md border px-2.5 py-2 transition-colors',
+                          'flex items-start gap-2 rounded-md border px-2 py-1 transition-colors',
                           answer?.selectedOptions.includes(oIndex)
                             ? 'border-green-500/40 bg-green-500/10'
                             : 'border-transparent bg-muted/25 hover:bg-muted/40'
@@ -394,13 +394,13 @@ export function AskUserQuestion({
                         />
                         <Label
                           htmlFor={`${toolCallId}-q${qIndex}-o${oIndex}`}
-                          className="flex flex-1 cursor-pointer flex-col items-start"
+                          className="flex flex-1 cursor-pointer flex-col items-start gap-0.5"
                         >
-                          <span className="font-medium">
+                          <span className="font-medium leading-tight">
                             <Markdown>{option.label}</Markdown>
                           </span>
                           {option.description && (
-                            <span className="mt-1 text-xs text-muted-foreground">
+                            <span className="text-xs text-muted-foreground leading-tight">
                               <Markdown>{option.description}</Markdown>
                             </span>
                           )}
@@ -413,30 +413,28 @@ export function AskUserQuestion({
                 {/* Show custom text if provided (read-only) or input field (editable) */}
                 {readOnly ? (
                   answer?.customText ? (
-                    <div className="rounded-md border border-green-500/30 bg-green-500/10 px-3 py-2 text-foreground">
-                      <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-green-600 dark:text-green-400">
+                    <div className="rounded-md border border-green-500/30 bg-green-500/10 px-2 py-1 text-foreground">
+                      <div className="text-[10px] font-semibold uppercase tracking-wide text-green-600 dark:text-green-400">
                         Custom Answer
                       </div>
-                      <div className="italic">
+                      <div className="italic leading-tight">
                         &ldquo;{answer.customText}&rdquo;
                       </div>
                     </div>
                   ) : !answer ? (
-                    <div className="pt-1 text-sm text-muted-foreground italic">
+                    <div className="text-sm text-muted-foreground italic">
                       Answer details unavailable after reload.
                     </div>
                   ) : null
                 ) : allowsCustomText ? (
-                  <div className="pt-1">
-                    <Input
-                      placeholder="Or type your own answer..."
-                      type={question.isSecret ? 'password' : 'text'}
-                      value={answers.get(qIndex)?.customText ?? ''}
-                      onChange={e => updateCustomText(qIndex, e.target.value)}
-                      disabled={readOnly}
-                      className="cursor-text font-mono text-base select-text bg-white dark:bg-input md:text-sm"
-                    />
-                  </div>
+                  <Input
+                    placeholder="Or type your own answer..."
+                    type={question.isSecret ? 'password' : 'text'}
+                    value={answers.get(qIndex)?.customText ?? ''}
+                    onChange={e => updateCustomText(qIndex, e.target.value)}
+                    disabled={readOnly}
+                    className="h-8 cursor-text font-mono text-sm select-text bg-white dark:bg-input"
+                  />
                 ) : null}
               </div>
             </div>
@@ -445,7 +443,7 @@ export function AskUserQuestion({
 
         {/* Submit/Skip buttons (only if not read-only) */}
         {!readOnly && (
-          <div className="flex justify-start gap-2 pt-2">
+          <div className="flex justify-start gap-2 pt-1">
             <Button size="sm" onClick={handleSubmit}>
               Answer
               <Kbd className="ml-1.5 h-4 text-[10px] bg-primary-foreground/20 text-primary-foreground">
@@ -472,7 +470,7 @@ export function AskUserQuestion({
 
   // Default: render full interactive question form
   return (
-    <div className="my-3 min-w-0 cursor-default rounded border border-muted bg-muted/30 p-4 font-mono text-sm select-none">
+    <div className="my-2 min-w-0 cursor-default rounded border border-muted bg-muted/30 p-3 font-mono text-sm select-none">
       {renderQuestionContent()}
     </div>
   )
