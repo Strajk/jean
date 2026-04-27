@@ -23,17 +23,21 @@ function isEditTool(
 interface EditedFilesDisplayProps {
   toolCalls: ToolCall[] | undefined
   onFileClick: (path: string) => void
+  /** Option/Alt+click handler — opens git diff instead of content */
+  onFileDiffClick?: (path: string) => void
 }
 
 /**
  * Display edited files at the bottom of assistant messages
  * Collects all Edit tool calls and shows unique file paths
  * Clicking a file opens it in the file content modal
+ * Option/Alt+clicking opens the git diff modal instead
  * Memoized to prevent re-renders when parent state changes
  */
 export const EditedFilesDisplay = memo(function EditedFilesDisplay({
   toolCalls,
   onFileClick,
+  onFileDiffClick,
 }: EditedFilesDisplayProps) {
   if (!toolCalls) return null
 
@@ -57,12 +61,23 @@ export const EditedFilesDisplay = memo(function EditedFilesDisplay({
             <Badge
               variant="outline"
               className="cursor-pointer"
-              onClick={() => onFileClick(filePath)}
+              onClick={e => {
+                if (e.altKey && onFileDiffClick) {
+                  onFileDiffClick(filePath)
+                } else {
+                  onFileClick(filePath)
+                }
+              }}
             >
               {getFilename(filePath)}
             </Badge>
           </TooltipTrigger>
-          <TooltipContent>{filePath}</TooltipContent>
+          <TooltipContent>
+            {filePath}
+            {onFileDiffClick && (
+              <span className="ml-1 opacity-60">(⌥-click for diff)</span>
+            )}
+          </TooltipContent>
         </Tooltip>
       ))}
     </div>

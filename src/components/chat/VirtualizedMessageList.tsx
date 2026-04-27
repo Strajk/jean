@@ -84,8 +84,10 @@ interface VirtualizedMessageListProps {
   onQuestionSkip: (toolCallId: string) => void
   /** Callback when user clicks a file path */
   onFileClick: (path: string) => void
-  /** Callback when user clicks an edited file badge (opens diff modal) */
+  /** Callback when user clicks an edited file badge (opens content modal) */
   onEditedFileClick: (path: string) => void
+  /** Callback when user Option/Alt+clicks an edited file badge (opens diff modal) */
+  onEditedFileDiffClick?: (path: string) => void
   /** Callback when user fixes a finding */
   onFixFinding: (finding: ReviewFinding, suggestion?: string) => Promise<void>
   /** Callback when user fixes all findings */
@@ -154,6 +156,7 @@ export const VirtualizedMessageList = memo(
         onQuestionSkip,
         onFileClick,
         onEditedFileClick,
+        onEditedFileDiffClick,
         onFixFinding,
         onFixAllFindings,
         isQuestionAnswered,
@@ -443,6 +446,7 @@ export const VirtualizedMessageList = memo(
                   onQuestionSkip={onQuestionSkip}
                   onFileClick={onFileClick}
                   onEditedFileClick={onEditedFileClick}
+                  onEditedFileDiffClick={onEditedFileDiffClick}
                   onFixFinding={onFixFinding}
                   onFixAllFindings={onFixAllFindings}
                   isQuestionAnswered={isQuestionAnswered}
