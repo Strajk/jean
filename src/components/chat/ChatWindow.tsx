@@ -2442,6 +2442,7 @@ export function ChatWindow({
                                   onQuestionSkip={handleSkipQuestion}
                                   onFileClick={setViewingFilePath}
                                   onEditedFileClick={setViewingFilePath}
+                                  onEditedFileDiffClick={setEditedFilePath}
                                   onFixFinding={handleFixFinding}
                                   onFixAllFindings={handleFixAllFindings}
                                   isQuestionAnswered={isQuestionAnswered}
@@ -2478,6 +2479,7 @@ export function ChatWindow({
                                     onQuestionSkip={handleSkipQuestion}
                                     onFileClick={setViewingFilePath}
                                     onEditedFileClick={setViewingFilePath}
+                                    onEditedFileDiffClick={setEditedFilePath}
                                     isQuestionAnswered={isQuestionAnswered}
                                     getSubmittedAnswers={getSubmittedAnswers}
                                     areQuestionsSkipped={areQuestionsSkipped}
