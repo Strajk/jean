@@ -35,6 +35,7 @@ interface MessageListProps {
   onQuestionSkip: (toolCallId: string) => void
   onFileClick: (path: string) => void
   onEditedFileClick: (path: string, edits: FileEdit[]) => void
+  onEditedFileDiffClick?: (path: string) => void
   onFixFinding: (finding: ReviewFinding, suggestion?: string) => Promise<void>
   onFixAllFindings: (
     findings: { finding: ReviewFinding; suggestion?: string }[]
@@ -77,6 +78,7 @@ export const MessageList = memo(function MessageList({
   onQuestionSkip,
   onFileClick,
   onEditedFileClick,
+  onEditedFileDiffClick,
   onFixFinding,
   onFixAllFindings,
   isQuestionAnswered,
@@ -144,6 +146,7 @@ export const MessageList = memo(function MessageList({
               onQuestionSkip={onQuestionSkip}
               onFileClick={onFileClick}
               onEditedFileClick={onEditedFileClick}
+              onEditedFileDiffClick={onEditedFileDiffClick}
               onFixFinding={onFixFinding}
               onFixAllFindings={onFixAllFindings}
               isQuestionAnswered={isQuestionAnswered}

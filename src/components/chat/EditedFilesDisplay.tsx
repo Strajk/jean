@@ -31,17 +31,20 @@ function isEditTool(
 interface EditedFilesDisplayProps {
   toolCalls: ToolCall[] | undefined
   onFileClick: (path: string, edits: FileEdit[]) => void
+  /** Option/Alt+click handler — opens git diff (uncommitted vs working tree) instead of session-edit diff */
+  onFileDiffClick?: (path: string) => void
 }
 
 /**
  * Display edited files at the bottom of assistant messages.
  * Collects all Edit tool calls and shows unique file paths as clickable pills.
- * Clicking a pill opens the diff modal with every edit applied to that file
- * during this turn (in order).
+ * Plain click opens the session-edit diff modal (every edit applied to that file during this turn).
+ * Option/Alt+click opens the git diff modal showing uncommitted changes for the file.
  */
 export const EditedFilesDisplay = memo(function EditedFilesDisplay({
   toolCalls,
   onFileClick,
+  onFileDiffClick,
 }: EditedFilesDisplayProps) {
   const editsByPath = useMemo(() => {
     const map = new Map<string, FileEdit[]>()
@@ -74,14 +77,23 @@ export const EditedFilesDisplay = memo(function EditedFilesDisplay({
             <Badge
               variant="outline"
               className="cursor-pointer"
-              onClick={() =>
-                onFileClick(filePath, editsByPath.get(filePath) ?? [])
-              }
+              onClick={e => {
+                if (e.altKey && onFileDiffClick) {
+                  onFileDiffClick(filePath)
+                } else {
+                  onFileClick(filePath, editsByPath.get(filePath) ?? [])
+                }
+              }}
             >
               {getFilename(filePath)}
             </Badge>
           </TooltipTrigger>
-          <TooltipContent>{filePath}</TooltipContent>
+          <TooltipContent>
+            {filePath}
+            {onFileDiffClick && (
+              <span className="ml-1 opacity-60">(⌥-click for diff)</span>
+            )}
+          </TooltipContent>
         </Tooltip>
       ))}
     </div>

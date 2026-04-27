@@ -2595,6 +2595,7 @@ export function ChatWindow({
                                     onQuestionSkip={handleSkipQuestion}
                                     onFileClick={setViewingFilePath}
                                     onEditedFileClick={handleEditedFileClick}
+                                    onEditedFileDiffClick={setEditedFilePath}
                                     onFixFinding={handleFixFinding}
                                     onFixAllFindings={handleFixAllFindings}
                                     isQuestionAnswered={isQuestionAnswered}
@@ -2669,6 +2670,7 @@ export function ChatWindow({
                                     onQuestionSkip={handleSkipQuestion}
                                     onFileClick={setViewingFilePath}
                                     onEditedFileClick={handleEditedFileClick}
+                                    onEditedFileDiffClick={setEditedFilePath}
                                     onFixFinding={handleFixFinding}
                                     onFixAllFindings={handleFixAllFindings}
                                     isQuestionAnswered={isQuestionAnswered}
@@ -2707,6 +2709,7 @@ export function ChatWindow({
                                       onQuestionSkip={handleSkipQuestion}
                                       onFileClick={setViewingFilePath}
                                       onEditedFileClick={handleEditedFileClick}
+                                      onEditedFileDiffClick={setEditedFilePath}
                                       isQuestionAnswered={isQuestionAnswered}
                                       getSubmittedAnswers={getSubmittedAnswers}
                                       areQuestionsSkipped={areQuestionsSkipped}
@@ -2723,6 +2726,7 @@ export function ChatWindow({
                                       onQuestionSkip={handleSkipQuestion}
                                       onFileClick={setViewingFilePath}
                                       onEditedFileClick={handleEditedFileClick}
+                                      onEditedFileDiffClick={setEditedFilePath}
                                       isQuestionAnswered={isQuestionAnswered}
                                       getSubmittedAnswers={getSubmittedAnswers}
                                       areQuestionsSkipped={areQuestionsSkipped}

@@ -118,8 +118,10 @@ interface MessageItemProps {
   onQuestionSkip: (toolCallId: string) => void
   /** Callback when user clicks a file path */
   onFileClick: (path: string) => void
-  /** Callback when user clicks an edited file badge (opens diff modal) */
+  /** Callback when user clicks an edited file badge (opens session-edit diff modal) */
   onEditedFileClick: (path: string, edits: FileEdit[]) => void
+  /** Callback when user Option/Alt+clicks an edited file badge (opens git diff modal) */
+  onEditedFileDiffClick?: (path: string) => void
   /** Callback when user fixes a finding */
   onFixFinding: (finding: ReviewFinding, suggestion?: string) => Promise<void>
   /** Callback when user fixes all findings */
@@ -173,6 +175,7 @@ export const MessageItem = memo(function MessageItem({
   onQuestionSkip,
   onFileClick,
   onEditedFileClick,
+  onEditedFileDiffClick,
   onFixFinding,
   onFixAllFindings,
   isQuestionAnswered,
@@ -809,6 +812,7 @@ export const MessageItem = memo(function MessageItem({
           <EditedFilesDisplay
             toolCalls={message.tool_calls}
             onFileClick={onEditedFileClick}
+            onFileDiffClick={onEditedFileDiffClick}
           />
         )}
 
