@@ -15,8 +15,11 @@ import { useUIStore } from '@/store/ui-store'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { TerminalStatusIndicator } from '@/hooks/useWorktreeTerminalStatus'
 import { WorktreeContextMenu } from './WorktreeContextMenu'
+import { SidebarSessionContextMenu } from './SidebarSessionContextMenu'
 import { useRenameWorktree } from '@/services/projects'
 import { useSessions } from '@/services/chat'
+import { useSessionArchive } from '@/components/chat/hooks/useSessionArchive'
+import { LabelModal } from '@/components/chat/LabelModal'
 import { isAskUserQuestion, isPlanToolCall } from '@/types/chat'
 import {
   computeSessionCardData,
@@ -347,6 +350,21 @@ export function WorktreeItem({
     [projectId, worktree.id, worktree.path, selectProject, selectWorktree]
   )
 
+  // Session context menu actions (archive/delete)
+  const { handleArchiveSession, handleDeleteSession } = useSessionArchive({
+    worktreeId: worktree.id,
+    worktreePath: worktree.path,
+    removalBehavior: preferences?.removal_behavior,
+  })
+
+  // Label modal state for sidebar session context menu
+  const [labelModalOpen, setLabelModalOpen] = useState(false)
+  const [labelTargetSessionId, setLabelTargetSessionId] = useState<string | null>(null)
+  const labelTargetCard = useMemo(
+    () => allCards.find(c => c.session.id === labelTargetSessionId),
+    [allCards, labelTargetSessionId]
+  )
+
   // Inline editing state
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(worktree.name)
@@ -525,6 +543,7 @@ export function WorktreeItem({
   )
 
   return (
+    <>
     <div>
       <WorktreeContextMenu
         worktree={worktree}
@@ -706,38 +725,50 @@ export function WorktreeItem({
                   {group.cards.map(card => {
                     const config = statusConfig[card.status]
                     return (
-                      <div
+                      <SidebarSessionContextMenu
                         key={card.session.id}
-                        className={cn(
-                          'flex items-center gap-1.5 pl-5 py-1 cursor-pointer text-sm truncate',
-                          activeSessionId === card.session.id && isSelected
-                            ? 'text-foreground bg-primary/10 font-medium'
-                            : activeSessionId === card.session.id
-                              ? 'text-foreground/80 hover:text-foreground hover:bg-accent/50'
-                              : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                        )}
-                        onClick={e => {
-                          e.stopPropagation()
-                          handleSessionSelect(card.session.id)
+                        card={card}
+                        worktreeId={worktree.id}
+                        onArchive={handleArchiveSession}
+                        onDelete={handleDeleteSession}
+                        onLabelOpen={id => {
+                          setLabelTargetSessionId(id)
+                          setLabelModalOpen(true)
                         }}
+                        onSessionSelect={handleSessionSelect}
                       >
-                        <StatusIndicator
-                          status={config.indicatorStatus}
-                          variant={config.indicatorVariant}
-                          title={config.label}
-                          className="h-1.5 w-1.5 shrink-0"
-                        />
-                        <span className="truncate text-xs">
-                          {card.session.name || 'Untitled'}
-                        </span>
-                        {card.label && (
-                          <div
-                            className="ml-auto h-2 w-2 shrink-0 rounded-full"
-                            style={{ backgroundColor: card.label.color }}
-                            title={card.label.name}
+                        <div
+                          className={cn(
+                            'flex items-center gap-1.5 pl-5 py-1 cursor-pointer text-sm truncate',
+                            activeSessionId === card.session.id && isSelected
+                              ? 'text-foreground bg-primary/10 font-medium'
+                              : activeSessionId === card.session.id
+                                ? 'text-foreground/80 hover:text-foreground hover:bg-accent/50'
+                                : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                          )}
+                          onClick={e => {
+                            e.stopPropagation()
+                            handleSessionSelect(card.session.id)
+                          }}
+                        >
+                          <StatusIndicator
+                            status={config.indicatorStatus}
+                            variant={config.indicatorVariant}
+                            title={config.label}
+                            className="h-1.5 w-1.5 shrink-0"
                           />
-                        )}
-                      </div>
+                          <span className="truncate text-xs">
+                            {card.session.name || 'Untitled'}
+                          </span>
+                          {card.label && (
+                            <div
+                              className="ml-auto h-2 w-2 shrink-0 rounded-full"
+                              style={{ backgroundColor: card.label.color }}
+                              title={card.label.name}
+                            />
+                          )}
+                        </div>
+                      </SidebarSessionContextMenu>
                     )
                   })}
                 </div>
@@ -745,42 +776,65 @@ export function WorktreeItem({
             : flatCards.map(card => {
                 const config = statusConfig[card.status]
                 return (
-                  <div
+                  <SidebarSessionContextMenu
                     key={card.session.id}
-                    className={cn(
-                      'flex items-center gap-1.5 pl-5 py-1 cursor-pointer text-sm truncate',
-                      activeSessionId === card.session.id && isSelected
-                        ? 'text-foreground bg-primary/10 font-medium'
-                        : activeSessionId === card.session.id
-                          ? 'text-foreground/80 hover:text-foreground hover:bg-accent/50'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-                    )}
-                    onClick={e => {
-                      e.stopPropagation()
-                      handleSessionSelect(card.session.id)
+                    card={card}
+                    worktreeId={worktree.id}
+                    onArchive={handleArchiveSession}
+                    onDelete={handleDeleteSession}
+                    onLabelOpen={id => {
+                      setLabelTargetSessionId(id)
+                      setLabelModalOpen(true)
                     }}
+                    onSessionSelect={handleSessionSelect}
                   >
-                    <StatusIndicator
-                      status={config.indicatorStatus}
-                      variant={config.indicatorVariant}
-                      title={config.label}
-                      className="h-1.5 w-1.5 shrink-0"
-                    />
-                    <span className="truncate text-xs">
-                      {card.session.name || 'Untitled'}
-                    </span>
-                    {card.label && (
-                      <div
-                        className="ml-auto h-2 w-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: card.label.color }}
-                        title={card.label.name}
+                    <div
+                      className={cn(
+                        'flex items-center gap-1.5 pl-5 py-1 cursor-pointer text-sm truncate',
+                        activeSessionId === card.session.id && isSelected
+                          ? 'text-foreground bg-primary/10 font-medium'
+                          : activeSessionId === card.session.id
+                            ? 'text-foreground/80 hover:text-foreground hover:bg-accent/50'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                      )}
+                      onClick={e => {
+                        e.stopPropagation()
+                        handleSessionSelect(card.session.id)
+                      }}
+                    >
+                      <StatusIndicator
+                        status={config.indicatorStatus}
+                        variant={config.indicatorVariant}
+                        title={config.label}
+                        className="h-1.5 w-1.5 shrink-0"
                       />
-                    )}
-                  </div>
+                      <span className="truncate text-xs">
+                        {card.session.name || 'Untitled'}
+                      </span>
+                      {card.label && (
+                        <div
+                          className="ml-auto h-2 w-2 shrink-0 rounded-full"
+                          style={{ backgroundColor: card.label.color }}
+                          title={card.label.name}
+                        />
+                      )}
+                    </div>
+                  </SidebarSessionContextMenu>
                 )
               })}
         </div>
       )}
     </div>
+
+    <LabelModal
+      isOpen={labelModalOpen}
+      onClose={() => {
+        setLabelModalOpen(false)
+        setLabelTargetSessionId(null)
+      }}
+      sessionId={labelTargetSessionId}
+      currentLabel={labelTargetCard?.label ?? null}
+    />
+    </>
   )
 }
