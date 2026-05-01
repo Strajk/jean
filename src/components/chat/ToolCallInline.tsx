@@ -34,6 +34,7 @@ import type { ToolCall } from '@/types/chat'
 import type { StackableItem } from './tool-call-utils'
 import { Markdown } from '@/components/ui/markdown'
 import { cn } from '@/lib/utils'
+import { stripAnsi } from '@/lib/strip-ansi'
 import { getFilename } from '@/lib/path-utils'
 import {
   Collapsible,
@@ -133,7 +134,7 @@ export function ToolCallInline({
         <CollapsibleContent>
           <div className="border-t border-border/50 px-3 py-2 select-text cursor-text">
             <div className="whitespace-pre-wrap text-xs text-muted-foreground">
-              {expandedContent}
+              {typeof expandedContent === 'string' ? stripAnsi(expandedContent) : expandedContent}
             </div>
             {shouldRenderRawOutput(toolCall) && (
               <>
@@ -142,7 +143,7 @@ export function ToolCallInline({
                   Output:
                 </div>
                 <pre className="max-h-64 overflow-auto whitespace-pre-wrap text-xs font-mono text-foreground/80 bg-muted/50 rounded p-2">
-                  {toolCall.output}
+                  {toolCall.output ? stripAnsi(toolCall.output) : toolCall.output}
                 </pre>
               </>
             )}
@@ -488,7 +489,7 @@ function SubToolItem({ toolCall, onFileClick }: SubToolItemProps) {
         <CollapsibleContent>
           <div className="border-t border-border/30 px-2 py-1.5 select-text cursor-text">
             <div className="whitespace-pre-wrap text-[0.625rem] text-muted-foreground/70">
-              {expandedContent}
+              {typeof expandedContent === 'string' ? stripAnsi(expandedContent) : expandedContent}
             </div>
             {shouldRenderRawOutput(toolCall) && (
               <>
@@ -497,7 +498,7 @@ function SubToolItem({ toolCall, onFileClick }: SubToolItemProps) {
                   Output:
                 </div>
                 <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-[0.625rem] font-mono text-foreground/70 bg-muted/30 rounded p-1.5">
-                  {toolCall.output}
+                  {toolCall.output ? stripAnsi(toolCall.output) : toolCall.output}
                 </pre>
               </>
             )}

@@ -7,6 +7,7 @@ import {
   isPlanToolCall,
 } from '@/types/chat'
 import { AskUserQuestion } from './AskUserQuestion'
+import { stripAnsi } from '@/lib/strip-ansi'
 
 /**
  * Merge multiple AskUserQuestion tool calls into a single question set.
@@ -130,9 +131,11 @@ export const ToolCallsDisplay = memo(function ToolCallsDisplay({
                   {tool.input != null && (
                     <div className="overflow-x-auto">
                       <pre className="mt-0.5 max-w-full text-[0.625rem] leading-tight whitespace-pre-wrap break-words">
-                        {typeof tool.input === 'string'
-                          ? tool.input
-                          : JSON.stringify(tool.input, null, 2)}
+                        {stripAnsi(
+                          typeof tool.input === 'string'
+                            ? tool.input
+                            : JSON.stringify(tool.input, null, 2)
+                        )}
                       </pre>
                     </div>
                   )}
