@@ -6,6 +6,7 @@ import {
 } from '@/components/ui/collapsible'
 import { ChevronRight, CheckCircle2, XCircle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { stripAnsi } from '@/lib/strip-ansi'
 import type { SetupScriptResult } from '@/types/chat'
 
 interface SetupScriptOutputProps {
@@ -78,7 +79,7 @@ export function SetupScriptOutput({
               </div>
             )}
             <pre className="whitespace-pre-wrap text-xs text-muted-foreground">
-              {result.output || '(no output)'}
+              {result.output ? stripAnsi(result.output) : '(no output)'}
             </pre>
           </div>
         </CollapsibleContent>
