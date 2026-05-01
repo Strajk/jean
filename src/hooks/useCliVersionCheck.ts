@@ -201,16 +201,29 @@ export function useCliVersionCheck() {
       })
     }
 
-    if (updates.length > 0) {
-      logger.info('CLI updates available', { updates })
-      const { setAvailableCliUpdates, availableCliUpdates } = useUIStore.getState()
-      const merged = [...availableCliUpdates]
-      for (const u of updates) {
-        const idx = merged.findIndex(m => m.type === u.type)
-        if (idx >= 0) merged[idx] = u
-        else merged.push(u)
-      }
-      setAvailableCliUpdates(merged)
+    // Sync store: remove CLIs no longer outdated (e.g. user updated manually),
+    // merge in newly detected updates.
+    const currentlyOutdated = new Set(
+      checks
+        .filter(c => {
+          if (!c.info.version || !c.versions?.length) return false
+          const latestStable = c.versions.find(v => !v.prerelease)
+          return latestStable && isNewerVersion(latestStable.version, c.info.version)
+        })
+        .map(c => c.type)
+    )
+
+    const { setAvailableCliUpdates, availableCliUpdates } = useUIStore.getState()
+    const nextUpdates = availableCliUpdates.filter(u => currentlyOutdated.has(u.type))
+    for (const u of updates) {
+      const idx = nextUpdates.findIndex(m => m.type === u.type)
+      if (idx >= 0) nextUpdates[idx] = u
+      else nextUpdates.push(u)
+    }
+
+    if (nextUpdates.length !== availableCliUpdates.length || updates.length > 0) {
+      if (updates.length > 0) logger.info('CLI updates available', { updates })
+      setAvailableCliUpdates(nextUpdates)
     }
 
     isInitialCheckRef.current = false
