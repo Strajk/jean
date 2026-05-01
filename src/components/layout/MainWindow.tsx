@@ -640,6 +640,7 @@ export function MainWindow() {
         offset={toasterOffset}
         mobileOffset={toasterOffset}
         expand={true}
+        closeButton
         toastOptions={{
           classNames: {
             toast:
