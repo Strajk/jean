@@ -28,6 +28,99 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import { useChatStore } from '@/store/chat-store'
+import { useProjectsStore } from '@/store/projects-store'
+import { queryClient } from '@/lib/query-client'
+import { projectsQueryKeys } from '@/services/projects'
+import { preferencesQueryKeys } from '@/services/preferences'
+import type { Project } from '@/types/projects'
+import type { AppPreferences } from '@/types/preferences'
+import { invoke } from '@/lib/transport'
+
+// Match a file-looking path, optionally followed by `:line` or `:line-line`.
+// The path must contain a separator AND a file extension, so we don't try to
+// open everyday inline code (`useState`, `console.log`) as a file. Range form
+// trims to the start line.
+const FILE_LINE_RE =
+  /^([^\s:]+[/\\][^\s:]*?\.[A-Za-z0-9]+)(?::(\d+)(?:-\d+)?)?$/
+const ABSOLUTE_PATH_RE = /^(\/|[a-zA-Z]:[\\/])/
+
+// Strip wrapping backticks/quotes/parens that often arrive from copy-paste or
+// rendered inline code that includes the markers in textContent.
+function stripWrappers(input: string): string {
+  let s = input.trim()
+  // Repeatedly strip matching outer wrappers
+  for (let i = 0; i < 4; i++) {
+    const first = s[0]
+    const last = s[s.length - 1]
+    if (!first || !last) break
+    if (
+      (first === '`' && last === '`') ||
+      (first === '"' && last === '"') ||
+      (first === "'" && last === "'") ||
+      (first === '(' && last === ')') ||
+      (first === '[' && last === ']')
+    ) {
+      s = s.slice(1, -1).trim()
+    } else {
+      break
+    }
+  }
+  return s
+}
+
+function tryOpenFileRef(text: string): boolean {
+  const trimmed = stripWrappers(text)
+  console.log('[file-ref] click', { text, trimmed })
+  const match = trimmed.match(FILE_LINE_RE)
+  if (!match) {
+    console.log('[file-ref] no regex match', { trimmed, regex: FILE_LINE_RE })
+    return false
+  }
+  const path = match[1]!
+  const lineStr = match[2] // may be undefined when no line number was given
+  const line = lineStr ? Number.parseInt(lineStr, 10) : undefined
+  console.log('[file-ref] matched', { path, line })
+  let resolved = path
+  if (!ABSOLUTE_PATH_RE.test(path)) {
+    const projectId = useProjectsStore.getState().selectedProjectId
+    const projects = queryClient.getQueryData<Project[]>(
+      projectsQueryKeys.list()
+    )
+    const project = projects?.find(p => p.id === projectId)
+    let basePath = project?.path
+    // Fallback to worktree path if no project path is available.
+    if (!basePath) {
+      const chat = useChatStore.getState()
+      const wid = chat.activeWorktreeId
+      basePath = wid ? chat.getWorktreePath(wid) : undefined
+    }
+    console.log('[file-ref] resolving relative', {
+      path,
+      projectId,
+      projectPath: project?.path,
+      basePath,
+    })
+    if (!basePath) {
+      console.warn('[file-ref] no base path; aborting')
+      return false
+    }
+    resolved = `${basePath.replace(/\/+$/, '')}/${path}`
+  }
+  // Reuse the existing editor preference / spawning logic from open_file_in_default_app
+  // so this behaves the same as the "Open in Editor" button in FileContentModal,
+  // gaining line-jump support across editors (Cursor/VS Code/Zed/IntelliJ/Xcode).
+  const prefs = queryClient.getQueryData<AppPreferences>(
+    preferencesQueryKeys.preferences()
+  )
+  const editor = prefs?.editor
+  console.log('[file-ref] opening', { path: resolved, editor, line })
+  invoke('open_file_in_default_app', { path: resolved, editor, line })
+    .then(() => console.log('[file-ref] open_file_in_default_app resolved'))
+    .catch(err =>
+      console.error('[file-ref] open_file_in_default_app failed', err)
+    )
+  return true
+}
 
 interface MarkdownProps {
   children: string
@@ -372,9 +465,16 @@ const components: Components = {
     if (isBlock) {
       return <code className={className}>{children}</code>
     }
-    // Inline code
+    // Inline code. Click checks for a `path:line[-line]` ref and opens it in
+    // Cursor; matching happens on click only because chats can contain a lot of
+    // inline code that almost never matches and we don't want per-render parsing.
     return (
-      <code className="rounded-md bg-muted px-1.5 py-0.5 text-[0.875em]">
+      <code
+        className="rounded-md bg-muted px-1.5 py-0.5 text-[0.875em] cursor-pointer hover:bg-muted/70"
+        onClick={e => {
+          tryOpenFileRef(e.currentTarget.textContent ?? '')
+        }}
+      >
         {children}
       </code>
     )
