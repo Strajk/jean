@@ -985,7 +985,9 @@ export interface AppPreferences {
   terminal_renderer?: TerminalRenderer // Embedded terminal renderer: 'xterm' or 'ghostty-web' (experimental)
   terminal_font?: TerminalFont // Embedded terminal font
   terminal_font_size?: number // Embedded terminal font size in pixels
+  terminal_secondary: TerminalApp | null // Secondary terminal app (shown alongside primary in Open in menu, opt-key shortcut)
   editor: EditorApp // Editor app: 'zed' | 'vscode' | 'cursor' | 'xcode'
+  editor_secondary: EditorApp | null // Secondary editor app (shown alongside primary in Open in menu, opt-key shortcut)
   open_in: OpenInDefault // Default Open In action: 'editor' | 'terminal' | 'finder' | 'github'
   auto_branch_naming: boolean // Automatically generate branch names from first message
   branch_naming_model: ClaudeModel // Model for generating branch names
@@ -1551,7 +1553,13 @@ const allTerminalOptions: {
 export const terminalOptions: { value: TerminalApp; label: string }[] =
   allTerminalOptions.filter(opt => opt.platforms.includes(getCurrentPlatform()))
 
-export type EditorApp = 'zed' | 'vscode' | 'cursor' | 'xcode' | 'intellij'
+export type EditorApp =
+  | 'zed'
+  | 'vscode'
+  | 'cursor'
+  | 'xcode'
+  | 'intellij'
+  | 'sublime'
 
 const allEditorOptions: {
   value: EditorApp
@@ -1567,6 +1575,11 @@ const allEditorOptions: {
   {
     value: 'cursor',
     label: 'Cursor',
+    platforms: ['mac', 'windows', 'linux'],
+  },
+  {
+    value: 'sublime',
+    label: 'Sublime Text',
     platforms: ['mac', 'windows', 'linux'],
   },
   { value: 'xcode', label: 'Xcode', platforms: ['mac'] },
@@ -1826,7 +1839,9 @@ export const defaultPreferences: AppPreferences = {
   terminal_renderer: 'xterm',
   terminal_font: 'jetbrains-mono',
   terminal_font_size: 13,
+  terminal_secondary: null,
   editor: 'zed',
+  editor_secondary: null,
   open_in: 'editor',
   auto_branch_naming: true,
   branch_naming_model: 'sonnet',

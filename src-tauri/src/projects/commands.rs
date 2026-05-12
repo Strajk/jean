@@ -4226,6 +4226,19 @@ pub async fn open_worktree_in_editor(
                 }
                 Err(e) => Err(e),
             },
+            "sublime" => match std::process::Command::new("subl")
+                .arg(&worktree_path)
+                .spawn()
+            {
+                Ok(child) => Ok(child),
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+                    // subl CLI not installed, fall back to macOS open
+                    std::process::Command::new("open")
+                        .args(["-a", "Sublime Text", &worktree_path])
+                        .spawn()
+                }
+                Err(e) => Err(e),
+            },
             "xcode" => std::process::Command::new("xed")
                 .arg(&worktree_path)
                 .spawn(),
@@ -4285,6 +4298,10 @@ pub async fn open_worktree_in_editor(
                 .args(["/c", "idea", &worktree_path])
                 .creation_flags(CREATE_NO_WINDOW)
                 .spawn(),
+            "sublime" => std::process::Command::new("cmd")
+                .args(["/c", "subl", &worktree_path])
+                .creation_flags(CREATE_NO_WINDOW)
+                .spawn(),
             "xcode" => {
                 return Err("Xcode is only available on macOS".to_string());
             }
@@ -4317,6 +4334,9 @@ pub async fn open_worktree_in_editor(
                 .arg(&worktree_path)
                 .spawn(),
             "intellij" => std::process::Command::new("idea")
+                .arg(&worktree_path)
+                .spawn(),
+            "sublime" => std::process::Command::new("subl")
                 .arg(&worktree_path)
                 .spawn(),
             "xcode" => {

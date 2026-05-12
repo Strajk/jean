@@ -49,6 +49,7 @@ interface ModalOption {
   icon: typeof Code
   key?: string
   metaKey?: boolean
+  altKey?: boolean
   url?: string
 }
 
@@ -118,7 +119,11 @@ export function OpenInModal() {
 
   const { data: ports } = usePorts(targetPath)
 
-  // Base options (Editor, Terminal, Finder, GitHub)
+  // Base options (Editor, Terminal, Finder, GitHub).
+  // Secondary editor/terminal get their own rows so keyboard nav (arrows + Enter)
+  // and the click target are uniform with the other rows. The visual hierarchy
+  // (primary feels primary) comes from the ⌥-shortcut chip and the slightly muted
+  // secondary label, not from cramming the alt into the primary row.
   const baseOptions = useMemo(() => {
     const allOptions: ModalOption[] = [
       {
@@ -127,12 +132,34 @@ export function OpenInModal() {
         icon: Code,
         key: 'E',
       },
+      ...(preferences?.editor_secondary
+        ? [
+            {
+              id: 'editor-secondary',
+              label: getEditorLabel(preferences.editor_secondary),
+              icon: Code,
+              key: 'E',
+              altKey: true,
+            },
+          ]
+        : []),
       {
         id: 'terminal',
         label: getTerminalLabel(preferences?.terminal),
         icon: Terminal,
         key: 'T',
       },
+      ...(preferences?.terminal_secondary
+        ? [
+            {
+              id: 'terminal-secondary',
+              label: getTerminalLabel(preferences.terminal_secondary),
+              icon: Terminal,
+              key: 'T',
+              altKey: true,
+            },
+          ]
+        : []),
       {
         id: 'finder',
         label: 'Finder',
@@ -162,7 +189,9 @@ export function OpenInModal() {
       : allOptions.filter(opt => opt.id === 'github' || opt.id === 'open-pr')
   }, [
     preferences?.editor,
+    preferences?.editor_secondary,
     preferences?.terminal,
+    preferences?.terminal_secondary,
     isNative,
     worktree?.pr_url,
     worktree?.pr_number,
@@ -330,11 +359,27 @@ export function OpenInModal() {
             editor: preferences?.editor,
           })
           break
+        case 'editor-secondary':
+          if (preferences?.editor_secondary) {
+            openInEditor.mutate({
+              worktreePath: targetPath,
+              editor: preferences.editor_secondary,
+            })
+          }
+          break
         case 'terminal':
           openInTerminal.mutate({
             worktreePath: targetPath,
             terminal: preferences?.terminal,
           })
+          break
+        case 'terminal-secondary':
+          if (preferences?.terminal_secondary) {
+            openInTerminal.mutate({
+              worktreePath: targetPath,
+              terminal: preferences.terminal_secondary,
+            })
+          }
           break
         case 'finder':
           openInFinder.mutate(targetPath)
@@ -397,13 +442,18 @@ export function OpenInModal() {
       const key = e.key.toLowerCase()
       const allIds = allOptions.map(opt => opt.id)
       const hasMeta = e.metaKey || e.ctrlKey
+      const hasAlt = e.altKey
 
-      // Quick select with shortcut keys (metaKey options require Cmd/Ctrl)
+      // Quick select with shortcut keys.
+      // metaKey options require Cmd/Ctrl. altKey options require Opt/Alt.
+      // Plain options require neither — so Opt+E doesn't match the primary
+      // editor row (which would launch the wrong app).
       const matchedOption = allOptions.find(
         opt =>
           opt.key &&
           opt.key.toLowerCase() === key &&
-          (opt.metaKey ? hasMeta : !hasMeta)
+          (opt.metaKey ? hasMeta : !hasMeta) &&
+          (opt.altKey ? hasAlt : !hasAlt)
       )
       if (matchedOption) {
         e.preventDefault()
@@ -456,7 +506,11 @@ export function OpenInModal() {
         </div>
         {option.key && (
           <kbd className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded ml-2 shrink-0">
-            {option.metaKey ? `⌘${option.key}` : option.key}
+            {option.metaKey
+              ? `⌘${option.key}`
+              : option.altKey
+                ? `⌥${option.key}`
+                : option.key}
           </kbd>
         )}
       </button>

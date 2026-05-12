@@ -993,6 +993,22 @@ export const GeneralPane: React.FC<{ scope?: PreferencesPaneScope }> = ({
     }
   }
 
+  const handleEditorSecondaryChange = (value: string) => {
+    if (preferences) {
+      patchPreferences.mutate({
+        editor_secondary: value === 'none' ? null : (value as EditorApp),
+      })
+    }
+  }
+
+  const handleTerminalSecondaryChange = (value: string) => {
+    if (preferences) {
+      patchPreferences.mutate({
+        terminal_secondary: value === 'none' ? null : (value as TerminalApp),
+      })
+    }
+  }
+
   const handleOpenInChange = (value: OpenInDefault) => {
     if (preferences) {
       patchPreferences.mutate({ open_in: value })
@@ -3595,6 +3611,32 @@ export const GeneralPane: React.FC<{ scope?: PreferencesPaneScope }> = ({
 
             {isNativeApp() && (
               <InlineField
+                label="Secondary editor"
+                description="Optional alternate editor — accessible via ⌥E in the Open in menu"
+              >
+                <Select
+                  value={preferences?.editor_secondary ?? 'none'}
+                  onValueChange={handleEditorSecondaryChange}
+                >
+                  <SelectTrigger className="w-full sm:min-w-96">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {editorOptions
+                      .filter(option => option.value !== preferences?.editor)
+                      .map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </InlineField>
+            )}
+
+            {isNativeApp() && (
+              <InlineField
                 label="Terminal"
                 description="App to open terminals in"
               >
@@ -3611,6 +3653,32 @@ export const GeneralPane: React.FC<{ scope?: PreferencesPaneScope }> = ({
                         {option.label}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </InlineField>
+            )}
+
+            {isNativeApp() && (
+              <InlineField
+                label="Secondary terminal"
+                description="Optional alternate terminal — accessible via ⌥T in the Open in menu"
+              >
+                <Select
+                  value={preferences?.terminal_secondary ?? 'none'}
+                  onValueChange={handleTerminalSecondaryChange}
+                >
+                  <SelectTrigger className="w-full sm:min-w-96">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {terminalOptions
+                      .filter(option => option.value !== preferences?.terminal)
+                      .map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </InlineField>

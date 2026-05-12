@@ -19,7 +19,11 @@ import {
   useOpenBranchOnGitHub,
 } from '@/services/projects'
 import { usePreferences } from '@/services/preferences'
-import { getOpenInDefaultLabel } from '@/types/preferences'
+import {
+  getOpenInDefaultLabel,
+  getEditorLabel,
+  getTerminalLabel,
+} from '@/types/preferences'
 import { isNativeApp } from '@/lib/environment'
 
 interface OpenInButtonProps {
@@ -48,6 +52,22 @@ export function OpenInButton({
             terminal: preferences?.terminal,
           })
           break
+        case 'terminal-secondary':
+          if (preferences?.terminal_secondary) {
+            openInTerminal.mutate({
+              worktreePath,
+              terminal: preferences.terminal_secondary,
+            })
+          }
+          break
+        case 'editor-secondary':
+          if (preferences?.editor_secondary) {
+            openInEditor.mutate({
+              worktreePath,
+              editor: preferences.editor_secondary,
+            })
+          }
+          break
         case 'finder':
           openInFinder.mutate(worktreePath)
           break
@@ -68,7 +88,9 @@ export function OpenInButton({
       worktreePath,
       branch,
       preferences?.editor,
+      preferences?.editor_secondary,
       preferences?.terminal,
+      preferences?.terminal_secondary,
     ]
   )
 
@@ -116,6 +138,12 @@ export function OpenInButton({
               preferences?.terminal
             )}
           </DropdownMenuItem>
+          {preferences?.editor_secondary && (
+            <DropdownMenuItem onSelect={() => openAction('editor-secondary')}>
+              <Code className="h-4 w-4" />
+              {getEditorLabel(preferences.editor_secondary)}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onSelect={() => openAction('terminal')}>
             <Terminal className="h-4 w-4" />
             {getOpenInDefaultLabel(
@@ -124,6 +152,12 @@ export function OpenInButton({
               preferences?.terminal
             )}
           </DropdownMenuItem>
+          {preferences?.terminal_secondary && (
+            <DropdownMenuItem onSelect={() => openAction('terminal-secondary')}>
+              <Terminal className="h-4 w-4" />
+              {getTerminalLabel(preferences.terminal_secondary)}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onSelect={() => openAction('finder')}>
             <FolderOpen className="h-4 w-4" />
             Finder

@@ -153,8 +153,12 @@ pub struct AppPreferences {
     pub terminal_font: String, // Embedded terminal font: jetbrains-mono, fira-code, source-code-pro, sf-mono, system
     #[serde(default = "default_terminal_font_size")]
     pub terminal_font_size: u32, // Embedded terminal font size in pixels (10-24)
+    #[serde(default)]
+    pub terminal_secondary: Option<String>, // Secondary terminal app (opt-key shortcut in Open in menu)
     #[serde(default = "default_editor")]
-    pub editor: String, // Editor app: zed, vscode, cursor, xcode, intellij
+    pub editor: String, // Editor app: zed, vscode, cursor, xcode, intellij, sublime
+    #[serde(default)]
+    pub editor_secondary: Option<String>, // Secondary editor app (opt-key shortcut in Open in menu)
     #[serde(default = "default_open_in")]
     pub open_in: String, // Default Open In action: editor, terminal, finder, github
     #[serde(default = "default_auto_branch_naming")]
@@ -1765,7 +1769,9 @@ impl Default for AppPreferences {
             terminal_renderer: default_terminal_renderer(),
             terminal_font: default_terminal_font(),
             terminal_font_size: default_terminal_font_size(),
+            terminal_secondary: None,
             editor: default_editor(),
+            editor_secondary: None,
             open_in: default_open_in(),
             auto_branch_naming: default_auto_branch_naming(),
             branch_naming_model: default_branch_naming_model(),
