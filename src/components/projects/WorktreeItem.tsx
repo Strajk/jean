@@ -7,7 +7,6 @@ import type {
 import { ArrowDown, ArrowUp, ChevronDown, GitBranch, GitPullRequestArrow, StickyNote } from 'lucide-react'
 // [STRAJK FORK] Scratchpad indicator dots
 import { useNonEmptyScratchpads } from '@/services/scratchpads'
-import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { dismissibleToast } from '@/lib/dismissible-toast'
 import { openExternal } from '@/lib/platform'

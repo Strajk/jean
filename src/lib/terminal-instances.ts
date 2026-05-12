@@ -652,7 +652,7 @@ async function createTerminalForRenderer(
   if (renderer === 'ghostty-web') {
     await ensureGhosttyWebReady()
     const terminal = new GhosttyWebTerminal(terminalOptions)
-    terminal.attachCustomKeyEventHandler(event => {
+    terminal.attachCustomKeyEventHandler((event: KeyboardEvent) => {
       // ghostty-web uses the inverse convention from xterm.js:
       // true means "custom handler consumed/prevented default".
       return shouldLetAppHandleShortcut(event)
@@ -729,7 +729,7 @@ function registerTerminalInputHandlers(
   // Drop input while transport is disconnected: queueing 30s+ of keystrokes
   // and dumping them into the shell on reconnect = footgun (e.g. dangerous
   // partial commands executed). Banner makes the dropped state visible.
-  terminal.onData(data => {
+  terminal.onData((data: string) => {
     queueTerminalInput(terminalId, data)
   })
 }
@@ -1246,6 +1246,8 @@ const NO_WRAP_COLS = 500
  * make the container horizontally scrollable.
  */
 function applyNoWrapLayout(instance: PersistentTerminal): void {
+  // terminal/fitAddon may be null mid-lifecycle (upstream made them nullable)
+  if (!instance.terminal || !instance.fitAddon) return
   const el = instance.terminal.element
   if (!el) return
   const container = el.parentElement as HTMLElement | null
@@ -1268,6 +1270,7 @@ function applyNoWrapLayout(instance: PersistentTerminal): void {
  * Remove no-wrap layout overrides from a terminal.
  */
 function clearNoWrapLayout(instance: PersistentTerminal): void {
+  if (!instance.terminal) return
   const el = instance.terminal.element
   if (!el) return
   const container = el.parentElement as HTMLElement | null
@@ -1291,6 +1294,7 @@ export function setWordWrap(enabled: boolean): void {
       // Re-fit to container width
       fitTerminal(terminalId)
     } else {
+      if (!instance.terminal) continue
       // Resize to wide cols, then widen the element so the canvas is fully visible
       const rows = instance.terminal.rows
       applyNoWrapLayout(instance)

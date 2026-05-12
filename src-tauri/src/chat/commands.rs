@@ -869,7 +869,6 @@ pub async fn fork_session_at_message(
         m.queued_messages.clear();
         m.highlights.clear();
         m.label = None;
-        m.digest = None;
         m.approved_plan_message_ids.clear();
         m.plan_file_path = None;
         m.pending_plan_message_id = None;

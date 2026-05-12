@@ -10,7 +10,6 @@ import {
 // [STRAJK FORK] Scratchpad indicator dots
 import { useNonEmptyScratchpads } from '@/services/scratchpads'
 import { convertFileSrc, convertProjectFileSrc } from '@/lib/transport'
-import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { dismissibleToast } from '@/lib/dismissible-toast'
 import type { Project } from '@/types/projects'

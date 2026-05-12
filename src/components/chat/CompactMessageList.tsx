@@ -70,6 +70,8 @@ interface CompactMessageListProps {
   onQuestionSkip: (toolCallId: string) => void
   onFileClick: (path: string) => void
   onEditedFileClick: (path: string, edits: FileEdit[]) => void
+  /** Option/Alt+click on edited file badge (opens git diff modal) */
+  onEditedFileDiffClick?: (path: string) => void
   onFixFinding: (finding: ReviewFinding, suggestion?: string) => Promise<void>
   onFixAllFindings: (
     findings: { finding: ReviewFinding; suggestion?: string }[]

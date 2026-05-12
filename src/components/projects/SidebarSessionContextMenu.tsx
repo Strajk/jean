@@ -46,7 +46,10 @@ export function SidebarSessionContextMenu({
   children,
 }: SidebarSessionContextMenuProps) {
   const { session, status, label } = card
-  const hasRecap = card.hasRecap
+  // Upstream rewrote the recap system to render inline from `## Recap` sections in messages;
+  // the old `card.hasRecap` flag no longer exists. Leave the menu item enabled — the recap
+  // handler will gracefully no-op (or open the empty recap UI) when there's nothing to show.
+  const hasRecap = true
   const hasPlan = !!(card.planFilePath || card.planContent)
   // Resume command prepends `cd <worktree-path>` so it works from any cwd.
   const { data: worktree } = useWorktree(worktreeId)
