@@ -15,6 +15,9 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { ChatSearchBar } from './ChatSearchBar'
 import { HighlightActionPopover } from './HighlightActionPopover'
 import { useTextHighlights } from './hooks/useTextHighlights'
+// [STRAJK FORK] Highlight threads (ephemeral side-discussions).
+import { HighlightThreadPanel } from './HighlightThreadPanel'
+import { useHighlightThreadEvents } from './hooks/useHighlightThreadEvents'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -1013,6 +1016,8 @@ export function ChatWindow({
 
   // Text highlights (persistent annotations via CSS Custom Highlight API)
   useTextHighlights(activeSessionId, scrollViewportRef)
+  // [STRAJK FORK] Wire Rust highlight-thread events into the Zustand store.
+  useHighlightThreadEvents()
 
   // Drag and drop images into chat input
   const { isDragging } = useDragAndDropImages(activeSessionId)
@@ -1858,6 +1863,35 @@ export function ChatWindow({
     clearChatInputState: () => clearChatInputStateRef.current?.(),
   })
 
+  // [STRAJK FORK] Scratchpad → submit-text handler.
+  // The scratchpad is mounted at the app root, but submitting a message must
+  // go through this ChatWindow's `handleSubmit` so it picks up all the
+  // session-scoped refs (model, mode, MCPs, etc.). We listen for an event
+  // dispatched by Scratchpad, populate the input draft for the active
+  // session, then trigger the same submit path the form uses.
+  useEffect(() => {
+    const handler = (e: CustomEvent<{ text: string }>) => {
+      const text = e.detail?.text?.trim()
+      if (!text || !activeSessionId) return
+      setInputDraft(activeSessionId, text)
+      if (inputRef.current) inputRef.current.value = text
+      // Defer one tick so the controlled textarea picks up the new draft
+      // before handleSubmit reads it.
+      setTimeout(() => {
+        const noop = () => undefined
+        handleSubmit({
+          preventDefault: noop,
+        } as unknown as React.FormEvent)
+      }, 0)
+    }
+    window.addEventListener('scratchpad:submit-text', handler as EventListener)
+    return () =>
+      window.removeEventListener(
+        'scratchpad:submit-text',
+        handler as EventListener
+      )
+  }, [activeSessionId, handleSubmit, setInputDraft, inputRef])
+
   // Note: Queue processing moved to useQueueProcessor hook in App.tsx
   // This ensures queued messages execute even when the worktree is unfocused
 
@@ -2471,6 +2505,9 @@ export function ChatWindow({
                           containerRef={scrollViewportRef}
                         />
                       )}
+                      {/* [STRAJK FORK] Side-discussion panel for highlights. */}
+                      <HighlightThreadPanel defaultModel={selectedModel} />
+
                       {/* Bottom fade gradient so messages don't hard-cut at the input area */}
                       <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 h-8 bg-gradient-to-b from-transparent to-background" />
                       <ScrollArea

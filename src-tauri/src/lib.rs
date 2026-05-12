@@ -4083,6 +4083,12 @@ pub fn run() {
             chat::set_active_session,
             chat::set_session_last_opened,
             chat::set_sessions_last_opened_bulk,
+            // [STRAJK FORK] Highlight-thread commands (ephemeral side discussions).
+            // Use the full module path: `generate_handler!` looks up the
+            // `__cmd__<name>` shim Tauri generates in the *defining* module,
+            // and `pub use` doesn't re-export those shims.
+            chat::highlight_thread::start_highlight_thread,
+            chat::highlight_thread::cancel_highlight_thread,
             // Chat commands - Session-based messaging
             chat::send_chat_message,
             chat::get_mcp_servers,

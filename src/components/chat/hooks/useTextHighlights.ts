@@ -78,15 +78,63 @@ export function useTextHighlights(
     return unsubscribe
   }, [sessionId, applyHighlights])
 
-  // Re-apply on mount and when session changes
+  // Re-apply on mount and when session changes.
+  //
+  // The bare 100ms timeout was racy: when navigating back to a session whose
+  // messages haven't been rendered yet, `applyHighlights` runs but
+  // `querySelector('[data-message-id]')` returns null, so highlights silently
+  // never apply. The chat-store subscription doesn't rescue us because
+  // `sessionHighlights[sessionId]` reference doesn't change between visits.
+  //
+  // Fix: watch the scroll container for new `[data-message-id]` elements and
+  // re-apply when they appear. Throttled via rAF so a burst of message
+  // renders doesn't thrash. The initial 100ms timeout is kept as a fast path
+  // for the common case where messages are already in the DOM.
   useEffect(() => {
-    // Delay to ensure messages are rendered
+    if (!sessionId) return
+
     const timer = setTimeout(() => applyHighlights(), 100)
+
+    let rafHandle = 0
+    const scheduleApply = () => {
+      if (rafHandle) return
+      rafHandle = requestAnimationFrame(() => {
+        rafHandle = 0
+        applyHighlights()
+      })
+    }
+
+    let observer: MutationObserver | null = null
+    if (containerRef.current && typeof MutationObserver !== 'undefined') {
+      observer = new MutationObserver(mutations => {
+        // Only react to nodes that look like message containers — avoids
+        // re-running on every text-stream chunk inside an existing message.
+        for (const m of mutations) {
+          for (const node of m.addedNodes) {
+            if (
+              node instanceof Element &&
+              (node.hasAttribute('data-message-id') ||
+                node.querySelector?.('[data-message-id]'))
+            ) {
+              scheduleApply()
+              return
+            }
+          }
+        }
+      })
+      observer.observe(containerRef.current, {
+        childList: true,
+        subtree: true,
+      })
+    }
+
     return () => {
       clearTimeout(timer)
+      if (rafHandle) cancelAnimationFrame(rafHandle)
+      observer?.disconnect()
       CSS.highlights?.delete(HIGHLIGHT_NAME)
     }
-  }, [sessionId, applyHighlights])
+  }, [sessionId, applyHighlights, containerRef])
 
   // Expose manual re-apply for use after scroll/load-more
   return { applyHighlights }

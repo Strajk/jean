@@ -19,8 +19,13 @@ pub mod tail;
 pub mod types;
 pub mod wakeup;
 
+// [STRAJK FORK] Ephemeral "ask about highlighted text" side-discussions.
+// See `.strajk/customizations/xx-highlight-ask.md` for intent.
+pub mod highlight_thread;
+
 pub use commands::*;
 pub use native_history::*;
+pub use highlight_thread::{cancel_highlight_thread, start_highlight_thread};
 pub use storage::{preserve_base_sessions, restore_base_sessions, with_sessions_mut};
 
 use std::sync::atomic::{AtomicUsize, Ordering};

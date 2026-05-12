@@ -1090,6 +1090,33 @@ pub async fn dispatch_command(
             Ok(Value::Null)
         }
 
+        // [STRAJK FORK] Highlight-thread commands.
+        // The events `highlight-thread:chunk/done/error/cancelled` are emitted
+        // through `app.emit_all`, which the WS bridge already broadcasts.
+        "start_highlight_thread" => {
+            let thread_id: String = field(&args, "threadId", "thread_id")?;
+            let prompt: String = from_field(&args, "prompt")?;
+            let quoted_text: String = field(&args, "quotedText", "quoted_text")?;
+            let message_context: Option<String> =
+                field_opt(&args, "messageContext", "message_context")?;
+            let model: Option<String> = from_field_opt(&args, "model")?;
+            crate::chat::start_highlight_thread(
+                app.clone(),
+                thread_id,
+                prompt,
+                quoted_text,
+                message_context,
+                model,
+            )
+            .await?;
+            Ok(Value::Null)
+        }
+        "cancel_highlight_thread" => {
+            let thread_id: String = field(&args, "threadId", "thread_id")?;
+            crate::chat::cancel_highlight_thread(thread_id).await?;
+            Ok(Value::Null)
+        }
+
         // =====================================================================
         // Chat Messaging
         // =====================================================================
