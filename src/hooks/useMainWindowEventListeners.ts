@@ -922,6 +922,20 @@ export function useMainWindowEventListeners() {
             useUIStore.getState().sessionChatModalOpen
           if (!chatVisible) return
         }
+        // Let Cmd+Up/Down move the cursor to start/end of the text
+        // when focus is in a text field — this is a standard macOS
+        // navigation gesture and should beat the chat-scroll binding.
+        if (action === 'scroll_chat_up' || action === 'scroll_chat_down') {
+          const active = document.activeElement
+          const tag = active?.tagName
+          if (
+            tag === 'INPUT' ||
+            tag === 'TEXTAREA' ||
+            (active as HTMLElement)?.isContentEditable
+          ) {
+            return
+          }
+        }
         e.preventDefault()
         e.stopPropagation()
         executeKeybindingAction(action, commandContext, queryClient)
