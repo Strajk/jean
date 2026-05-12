@@ -5,6 +5,8 @@ pub mod git_status;
 pub mod github_actions;
 pub mod github_issues;
 pub mod linear_issues;
+// [strajk-fork] Alternative Linear backend via mcporter MCP. See xx-linear-mcporter.md.
+pub mod linear_mcporter;
 mod names;
 pub mod pr_status;
 mod release_notes;

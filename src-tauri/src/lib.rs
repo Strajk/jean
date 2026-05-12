@@ -311,6 +311,16 @@ pub struct AppPreferences {
     pub yolo_effort_level: Option<String>, // Effort level override for yolo mode (Claude adaptive / Codex), None = use session effort
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub linear_api_key: Option<String>, // Global Linear personal API key (inherited by all projects)
+    // [strajk-fork] Linear backend selector — "pat" (default, personal API key) or "mcporter"
+    // (shell out to the user's authed mcporter Linear MCP). See xx-linear-mcporter.md.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linear_backend: Option<String>,
+    // [strajk-fork] Team key/name passed to mcporter's `list_issues` (mcporter doesn't accept team UUIDs).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linear_mcporter_team: Option<String>,
+    // [strajk-fork] Optional absolute path to `mcporter` binary. None = lookup on PATH.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub linear_mcporter_binary: Option<String>,
     #[serde(default = "default_cli_source")]
     pub claude_cli_source: String, // Claude CLI source: "jean" (managed) or "path" (system PATH)
     #[serde(default = "default_cli_source")]
@@ -1835,6 +1845,9 @@ impl Default for AppPreferences {
             build_effort_level: None,
             yolo_effort_level: None,
             linear_api_key: None,
+            linear_backend: None,
+            linear_mcporter_team: None,
+            linear_mcporter_binary: None,
             claude_cli_source: default_cli_source(),
             codex_cli_source: default_cli_source(),
             opencode_cli_source: default_cli_source(),

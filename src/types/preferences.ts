@@ -1063,6 +1063,12 @@ export interface AppPreferences {
   build_effort_level: string | null // Effort level override for build mode (Claude adaptive / Codex), null = use session effort
   yolo_effort_level: string | null // Effort level override for yolo mode (Claude adaptive / Codex), null = use session effort
   linear_api_key: string | null // Global Linear personal API key (inherited by all projects)
+  // [strajk-fork] Linear backend selector: 'pat' (default) | 'mcporter'. See xx-linear-mcporter.md.
+  linear_backend: 'pat' | 'mcporter' | null
+  // [strajk-fork] Team key (e.g. "KCW") passed to mcporter's list_issues. Mcporter doesn't accept team UUIDs.
+  linear_mcporter_team: string | null
+  // [strajk-fork] Optional absolute path to `mcporter`. null = lookup on PATH.
+  linear_mcporter_binary: string | null
   magic_models_auto_initialized: boolean // Whether magic prompt models were auto-set based on installed backends
   claude_cli_source: 'jean' | 'path' // Claude CLI source: 'jean' (managed) or 'path' (system PATH)
   codex_cli_source: 'jean' | 'path' // Codex CLI source: 'jean' (managed) or 'path' (system PATH)
@@ -1897,6 +1903,9 @@ export const defaultPreferences: AppPreferences = {
   build_effort_level: null, // Default: use session effort level
   yolo_effort_level: null, // Default: use session effort level
   linear_api_key: null, // Default: no global Linear API key
+  linear_backend: null, // Default: PAT (upstream behavior)
+  linear_mcporter_team: null,
+  linear_mcporter_binary: null,
   magic_models_auto_initialized: false, // Default: not yet auto-set
   claude_cli_source: 'jean', // Default: Jean-managed
   codex_cli_source: 'jean', // Default: Jean-managed

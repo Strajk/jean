@@ -270,6 +270,17 @@ struct LinearConfig {
     team_id: Option<String>,
 }
 
+// [strajk-fork] Look up project name only — used by context-loading commands that don't
+// need an API key. Required because under the `mcporter` backend, `get_linear_config`
+// returns Err (no PAT configured) but the file-tracking still needs the project name.
+fn get_linear_project_name(app: &AppHandle, project_id: &str) -> Result<String, String> {
+    let data = load_projects_data(app)?;
+    let project = data
+        .find_project(project_id)
+        .ok_or_else(|| format!("Project not found: {project_id}"))?;
+    Ok(project.name.clone())
+}
+
 /// Get the Linear config for a project, falling back to global preferences for the API key.
 fn get_linear_config(app: &AppHandle, project_id: &str) -> Result<LinearConfig, String> {
     let data = load_projects_data(app)?;
@@ -499,6 +510,11 @@ pub async fn list_linear_teams(
 ) -> Result<Vec<LinearTeam>, String> {
     log::info!("Listing Linear teams for project {project_id}");
 
+    // [strajk-fork] Route to mcporter backend when selected. See xx-linear-mcporter.md.
+    if super::linear_mcporter::is_mcporter_backend(&app)? {
+        return super::linear_mcporter::list_teams(&app);
+    }
+
     let config = get_linear_config(&app, &project_id)?;
     log::info!(
         "Linear config resolved: api_key_len={}, project={}",
@@ -543,6 +559,11 @@ pub async fn list_linear_issues(
 ) -> Result<LinearIssueListResult, String> {
     log::trace!("Listing Linear issues for project {project_id}");
 
+    // [strajk-fork] Route to mcporter backend when selected. See xx-linear-mcporter.md.
+    if super::linear_mcporter::is_mcporter_backend(&app)? {
+        return super::linear_mcporter::list_issues(&app);
+    }
+
     let config = get_linear_config(&app, &project_id)?;
     let query = build_list_issues_query(config.team_id.as_deref());
     let variables = config.team_id.map(|id| serde_json::json!({ "teamId": id }));
@@ -570,6 +591,11 @@ pub async fn search_linear_issues(
     query: String,
 ) -> Result<Vec<LinearIssue>, String> {
     log::trace!("Searching Linear issues for project {project_id}: {query}");
+
+    // [strajk-fork] Route to mcporter backend when selected. See xx-linear-mcporter.md.
+    if super::linear_mcporter::is_mcporter_backend(&app)? {
+        return super::linear_mcporter::search_issues(&app, &query);
+    }
 
     let config = get_linear_config(&app, &project_id)?;
     let gql_query = build_search_issues_query(config.team_id.as_deref());
@@ -600,6 +626,11 @@ pub async fn get_linear_issue(
     issue_id: String,
 ) -> Result<LinearIssueDetail, String> {
     log::trace!("Getting Linear issue {issue_id} for project {project_id}");
+
+    // [strajk-fork] Route to mcporter backend when selected. See xx-linear-mcporter.md.
+    if super::linear_mcporter::is_mcporter_backend(&app)? {
+        return super::linear_mcporter::get_issue(&app, &issue_id);
+    }
 
     let config = get_linear_config(&app, &project_id)?;
 
@@ -665,6 +696,11 @@ pub async fn get_linear_issue_by_number(
 ) -> Result<Option<LinearIssue>, String> {
     log::trace!("Getting Linear issue #{issue_number} for project {project_id}");
 
+    // [strajk-fork] Route to mcporter backend when selected. See xx-linear-mcporter.md.
+    if super::linear_mcporter::is_mcporter_backend(&app)? {
+        return super::linear_mcporter::get_issue_by_number(&app, issue_number);
+    }
+
     let config = get_linear_config(&app, &project_id)?;
     let query = build_issue_by_number_query(config.team_id.as_deref());
     let mut variables = serde_json::json!({ "number": issue_number });
@@ -694,8 +730,9 @@ pub async fn load_linear_issue_context(
 ) -> Result<LoadedLinearIssueContext, String> {
     log::trace!("Loading Linear issue {issue_id} context for session {session_id}");
 
-    let config = get_linear_config(&app, &project_id)?;
-    let project_name = config.project_name;
+    // [strajk-fork] Use project-name-only helper so this works under the mcporter backend
+    // (no PAT). The actual fetch happens via get_linear_issue below, which routes correctly.
+    let project_name = get_linear_project_name(&app, &project_id)?;
 
     let detail = get_linear_issue(app.clone(), project_id, issue_id).await?;
 
@@ -739,8 +776,8 @@ pub async fn list_loaded_linear_issue_contexts(
 ) -> Result<Vec<LoadedLinearIssueContext>, String> {
     log::trace!("Listing loaded Linear issue contexts for session {session_id}");
 
-    let config = get_linear_config(&app, &project_id)?;
-    let project_name = config.project_name;
+    // [strajk-fork] Project name only — works under both PAT and mcporter backends.
+    let project_name = get_linear_project_name(&app, &project_id)?;
 
     let mut keys = get_session_linear_refs(&app, &session_id)?;
 
@@ -826,8 +863,8 @@ pub async fn get_linear_issue_context_contents(
 ) -> Result<Vec<LinearIssueContextContent>, String> {
     log::trace!("Getting Linear issue context contents for session {session_id}");
 
-    let config = get_linear_config(&app, &project_id)?;
-    let project_name = config.project_name;
+    // [strajk-fork] Project name only — works under both PAT and mcporter backends.
+    let project_name = get_linear_project_name(&app, &project_id)?;
 
     let mut keys = get_session_linear_refs(&app, &session_id)?;
 
@@ -889,8 +926,8 @@ pub async fn remove_linear_issue_context(
 ) -> Result<(), String> {
     log::trace!("Removing Linear issue {identifier} context for session {session_id}");
 
-    let config = get_linear_config(&app, &project_id)?;
-    let project_name = config.project_name;
+    // [strajk-fork] Project name only — works under both PAT and mcporter backends.
+    let project_name = get_linear_project_name(&app, &project_id)?;
 
     let orphaned = remove_linear_reference(&app, &project_name, &identifier, &session_id)?;
 
