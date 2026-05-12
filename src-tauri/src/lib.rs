@@ -4246,6 +4246,10 @@ pub fn run() {
             opencode_server::start_opencode_server,
             opencode_server::stop_opencode_server,
             opencode_server::get_opencode_server_status,
+            // [STRAJK FORK] Scratchpad commands (per-session and per-project notes)
+            scratchpad::read_scratchpad,
+            scratchpad::write_scratchpad,
+            scratchpad::list_non_empty_scratchpads,
             // Nightshift commands
             nightshift::nightshift_list_checks,
             nightshift::nightshift_get_config,

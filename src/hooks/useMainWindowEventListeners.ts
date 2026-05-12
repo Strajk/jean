@@ -1206,6 +1206,12 @@ export function useMainWindowEventListeners() {
                     queryKey: ['saved-contexts'],
                   })
                   break
+                // [STRAJK FORK] Scratchpad indicator dots
+                case 'scratchpads':
+                  queryClient.invalidateQueries({
+                    queryKey: ['scratchpads'],
+                  })
+                  break
               }
             }
             pendingKeys.clear()

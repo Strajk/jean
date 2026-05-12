@@ -4,7 +4,10 @@ import type {
   IndicatorStatus,
   IndicatorVariant,
 } from '@/components/ui/status-indicator'
-import { ArrowDown, ArrowUp, ChevronDown, GitBranch, GitPullRequestArrow } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, GitBranch, GitPullRequestArrow, StickyNote } from 'lucide-react'
+// [STRAJK FORK] Scratchpad indicator dots
+import { useNonEmptyScratchpads } from '@/services/scratchpads'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { dismissibleToast } from '@/lib/dismissible-toast'
 import { openExternal } from '@/lib/platform'
@@ -86,6 +89,8 @@ export function WorktreeItem({
   )
   const isSelected = selectedWorktreeId === worktree.id
   const isBase = isBaseSession(worktree)
+  // [STRAJK FORK] Scratchpad: dot next to sessions that have notes.
+  const { data: sessionsWithScratchpad } = useNonEmptyScratchpads('session')
 
   // Get git status for this worktree from event-driven cache
   // Note: useGitStatus reads from TanStack Query cache, no network requests
@@ -786,6 +791,12 @@ export function WorktreeItem({
                           <span className="truncate text-xs">
                             {card.session.name || 'Untitled'}
                           </span>
+                          {sessionsWithScratchpad?.has(card.session.id) && (
+                            <StickyNote
+                              className="h-3 w-3 shrink-0 text-muted-foreground/60"
+                              aria-label="Has scratchpad notes"
+                            />
+                          )}
                           {card.label && (
                             <div
                               className="ml-auto h-2 w-2 shrink-0 rounded-full"
@@ -837,6 +848,12 @@ export function WorktreeItem({
                       <span className="truncate text-xs">
                         {card.session.name || 'Untitled'}
                       </span>
+                      {sessionsWithScratchpad?.has(card.session.id) && (
+                        <StickyNote
+                          className="h-3 w-3 shrink-0 text-muted-foreground/60"
+                          aria-label="Has scratchpad notes"
+                        />
+                      )}
                       {card.label && (
                         <div
                           className="ml-auto h-2 w-2 shrink-0 rounded-full"

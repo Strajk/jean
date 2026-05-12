@@ -5,8 +5,12 @@ import {
   ChevronDown,
   MoreHorizontal,
   Plus,
+  StickyNote,
 } from 'lucide-react'
+// [STRAJK FORK] Scratchpad indicator dots
+import { useNonEmptyScratchpads } from '@/services/scratchpads'
 import { convertFileSrc, convertProjectFileSrc } from '@/lib/transport'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { dismissibleToast } from '@/lib/dismissible-toast'
 import type { Project } from '@/types/projects'
@@ -50,6 +54,9 @@ export function ProjectTreeItem({ project }: ProjectTreeItemProps) {
   } = useProjectsStore()
   const { data: worktrees = [] } = useWorktrees(project.id)
   const { data: appDataDir = '' } = useAppDataDir()
+  // [STRAJK FORK] Scratchpad: dot next to projects that have notes.
+  const { data: projectsWithScratchpad } = useNonEmptyScratchpads('project')
+  const hasScratchpad = projectsWithScratchpad?.has(project.id) ?? false
   const hasWorktrees = worktrees.length > 0
   const isExpanded = hasWorktrees && expandedProjectIds.has(project.id)
   const setNewWorktreeModalOpen = useUIStore(
@@ -190,6 +197,12 @@ export function ProjectTreeItem({ project }: ProjectTreeItemProps) {
           {/* Name + Chevron */}
           <span className="flex flex-1 items-center gap-0.5 truncate text-sm">
             <span className="truncate">{project.name}</span>
+            {hasScratchpad && (
+              <StickyNote
+                className="h-3 w-3 shrink-0 text-muted-foreground/60"
+                aria-label="Has scratchpad notes"
+              />
+            )}
             {hasWorktrees && (
               <button
                 className={cn(

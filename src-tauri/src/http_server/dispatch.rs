@@ -3019,7 +3019,14 @@ pub async fn dispatch_command(
             // doesn't fail this dispatch arm (the `()` result is intentionally discarded).
             let _: () =
                 crate::scratchpad::write_scratchpad(app.clone(), scope, scope_id, content).await?;
+            // Refresh sidebar dot indicators across all clients.
+            emit_cache_invalidation(app, &["scratchpads"]);
             Ok(Value::Null)
+        }
+        "list_non_empty_scratchpads" => {
+            let scope: String = from_field(&args, "scope")?;
+            let result = crate::scratchpad::list_non_empty_scratchpads(app.clone(), scope).await?;
+            to_value(result)
         }
 
         // =====================================================================

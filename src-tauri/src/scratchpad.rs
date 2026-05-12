@@ -89,3 +89,44 @@ pub async fn write_scratchpad(
     let path = scratchpad_path(&app, &scope, &scope_id)?;
     fs::write(&path, content).map_err(|e| format!("Failed to write scratchpad: {e}"))
 }
+
+/// List ids whose scratchpad file contains at least one non-whitespace
+/// character. Used to power the "has notes" dot in the sidebar — a file that
+/// only contains spaces/newlines counts as empty so the indicator doesn't
+/// stick around after the user clears the pad without deleting the file.
+#[tauri::command]
+pub async fn list_non_empty_scratchpads(
+    app: AppHandle,
+    scope: String,
+) -> Result<Vec<String>, String> {
+    let scope = validate_scope(&scope)?;
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {e}"))?;
+    let dir = app_data_dir.join("scratchpads").join(scope);
+    if !dir.exists() {
+        return Ok(Vec::new());
+    }
+    let entries = fs::read_dir(&dir)
+        .map_err(|e| format!("Failed to read scratchpad dir: {e}"))?;
+    let mut ids = Vec::new();
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|s| s.to_str()) != Some("md") {
+            continue;
+        }
+        // Read up to the first 4 KiB to decide "non-empty" — if those bytes
+        // are all whitespace, the rest almost certainly is too, and reading
+        // megabytes of pad just to test a dot would be wasteful at scale.
+        let Ok(contents) = fs::read_to_string(&path) else {
+            continue;
+        };
+        if contents.chars().any(|c| !c.is_whitespace()) {
+            if let Some(stem) = path.file_stem().and_then(|s| s.to_str()) {
+                ids.push(stem.to_string());
+            }
+        }
+    }
+    Ok(ids)
+}

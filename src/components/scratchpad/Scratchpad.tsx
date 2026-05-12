@@ -19,12 +19,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { X } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { invoke } from '@/lib/transport'
 import { useUIStore } from '@/store/ui-store'
 import { useChatStore } from '@/store/chat-store'
 import { useProjectsStore } from '@/store/projects-store'
 import { logger } from '@/lib/logger'
 import { cn } from '@/lib/utils'
+import { scratchpadQueryKeys } from '@/services/scratchpads'
 
 const AUTOSAVE_DEBOUNCE_MS = 400
 
@@ -49,6 +51,7 @@ function resolveScopeId(scope: 'session' | 'project'): string | null {
 export function Scratchpad() {
   const scope = useUIStore(state => state.scratchpadOpen)
   const setScratchpadOpen = useUIStore(state => state.setScratchpadOpen)
+  const queryClient = useQueryClient()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [content, setContent] = useState('')
   const [scopeId, setScopeId] = useState<string | null>(null)
@@ -103,12 +106,17 @@ export function Scratchpad() {
     const key = `${scope}:${scopeId}`
     if (loadedKeyRef.current !== key) return
     const handle = setTimeout(() => {
-      invoke('write_scratchpad', { scope, scopeId, content }).catch(err => {
-        logger.error('Scratchpad: write failed', { error: String(err) })
-      })
+      invoke('write_scratchpad', { scope, scopeId, content })
+        .then(() => {
+          // Refresh sidebar indicator dot — non-empty status may have flipped.
+          queryClient.invalidateQueries({ queryKey: scratchpadQueryKeys.all })
+        })
+        .catch(err => {
+          logger.error('Scratchpad: write failed', { error: String(err) })
+        })
     }, AUTOSAVE_DEBOUNCE_MS)
     return () => clearTimeout(handle)
-  }, [content, scope, scopeId])
+  }, [content, scope, scopeId, queryClient])
 
   // Autofocus the textarea when the panel opens or scope switches.
   useEffect(() => {
@@ -156,10 +164,30 @@ export function Scratchpad() {
         // clearing so the user keeps any "later" notes that came after.
         const next = content.slice(0, start) + content.slice(end)
         setContent(next)
+        // Persist synchronously before closing: the debounced autosave
+        // effect would otherwise be cancelled by the unmount on close(),
+        // and the spliced selection would reappear on next open.
+        if (scope && scopeId) {
+          invoke('write_scratchpad', {
+            scope,
+            scopeId,
+            content: next,
+          })
+            .then(() => {
+              queryClient.invalidateQueries({
+                queryKey: scratchpadQueryKeys.all,
+              })
+            })
+            .catch(err => {
+              logger.error('Scratchpad: write-on-submit failed', {
+                error: String(err),
+              })
+            })
+        }
         close()
       }
     },
-    [content, close]
+    [content, close, scope, scopeId, queryClient]
   )
 
   if (!scope) return null
