@@ -390,23 +390,32 @@ export function computeSessionCardData(
   }
 }
 
-export function getResumeCommand(session: Session): string | null {
+// Single-quote a path for POSIX shells, escaping any embedded single quotes.
+// We cd into the worktree before invoking the CLI because most CLIs resolve
+// resume IDs relative to the current working directory.
+function shellQuote(path: string): string {
+  return `'${path.replace(/'/g, "'\\''")}'`
+}
+
+export function getResumeCommand(
+  session: Session,
+  worktreePath?: string | null
+): string | null {
+  let resume: string | null = null
   if (session.backend === 'claude' && session.claude_session_id) {
-    return `claude --resume ${session.claude_session_id}`
+    resume = `claude --resume ${session.claude_session_id}`
+  } else if (session.backend === 'codex' && session.codex_thread_id) {
+    resume = `codex resume ${session.codex_thread_id}`
+  } else if (session.backend === 'opencode' && session.opencode_session_id) {
+    resume = `opencode -s ${session.opencode_session_id}`
+  } else if (session.backend === 'cursor' && session.cursor_chat_id) {
+    resume = `cursor-agent --resume ${session.cursor_chat_id}`
+  } else if (session.backend === 'pi' && session.pi_session_id) {
+    resume = `pi --session ${session.pi_session_id}`
   }
-  if (session.backend === 'codex' && session.codex_thread_id) {
-    return `codex resume ${session.codex_thread_id}`
-  }
-  if (session.backend === 'opencode' && session.opencode_session_id) {
-    return `opencode -s ${session.opencode_session_id}`
-  }
-  if (session.backend === 'cursor' && session.cursor_chat_id) {
-    return `cursor-agent --resume ${session.cursor_chat_id}`
-  }
-  if (session.backend === 'pi' && session.pi_session_id) {
-    return `pi --session ${session.pi_session_id}`
-  }
-  return null
+  if (!resume) return null
+  if (worktreePath) return `cd ${shellQuote(worktreePath)} && ${resume}`
+  return resume
 }
 
 /**

@@ -51,7 +51,12 @@ import { useChatStore } from '@/store/chat-store'
 import { useProjectsStore } from '@/store/projects-store'
 import { chatQueryKeys } from '@/services/chat'
 import { usePreferences } from '@/services/preferences'
-import { useWorktree, type GitHubRemote } from '@/services/projects'
+import {
+  projectsQueryKeys,
+  useWorktree,
+  type GitHubRemote,
+} from '@/services/projects'
+import type { Worktree } from '@/types/projects'
 import {
   useCodexCliAuth,
   useCodexCliStatus,
@@ -261,7 +266,15 @@ export function FloatingDock() {
         'with-counts',
       ])
     const session = cached?.sessions?.find(s => s.id === activeSessionId)
-    return session ? getResumeCommand(session) : null
+    if (!session) return null
+    // Pull the worktree path from the React Query cache so the copied command
+    // can `cd` into the right directory before resuming.
+    const cachedWorktree = queryClient.getQueryData<Worktree>([
+      ...projectsQueryKeys.all,
+      'worktree',
+      currentWorktreeId,
+    ])
+    return getResumeCommand(session, cachedWorktree?.path)
   }, [queryClient])
 
   const handleQuickMenuOpenChange = useCallback(

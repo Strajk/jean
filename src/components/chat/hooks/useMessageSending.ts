@@ -448,7 +448,14 @@ export function useMessageSending({
         queuedAt: Date.now(),
       }
 
-      markAtBottom()
+      // Hold Option/Alt while submitting (Opt+Enter) to skip the auto-scroll
+      // to the bottom — useful when you're still reading earlier messages and
+      // want to queue a follow-up without losing your scroll position.
+      const skipScrollToBottom =
+        'altKey' in e && (e as React.KeyboardEvent).altKey === true
+      if (!skipScrollToBottom) {
+        markAtBottom()
+      }
 
       const isSendingNow = checkIsSendingNow(activeSessionId)
       console.log(

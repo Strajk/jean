@@ -24,6 +24,7 @@ import {
   getResumeCommand,
   type SessionCardData,
 } from '@/components/chat/session-card-utils'
+import { useWorktree } from '@/services/projects'
 
 interface SidebarSessionContextMenuProps {
   card: SessionCardData
@@ -47,7 +48,9 @@ export function SidebarSessionContextMenu({
   const { session, status, label } = card
   const hasRecap = card.hasRecap
   const hasPlan = !!(card.planFilePath || card.planContent)
-  const resumeCommand = getResumeCommand(session)
+  // Resume command prepends `cd <worktree-path>` so it works from any cwd.
+  const { data: worktree } = useWorktree(worktreeId)
+  const resumeCommand = getResumeCommand(session, worktree?.path)
 
   const handleRename = useCallback(() => {
     onSessionSelect(session.id)
