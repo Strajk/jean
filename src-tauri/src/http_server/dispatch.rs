@@ -1031,6 +1031,22 @@ pub async fn dispatch_command(
             .await?;
             to_value(result)
         }
+        // [STRAJK FORK] Fork a session at a specific assistant message.
+        "fork_session_at_message" => {
+            let worktree_id: String = field(&args, "worktreeId", "worktree_id")?;
+            let worktree_path: String = field(&args, "worktreePath", "worktree_path")?;
+            let source_session_id: String = field(&args, "sourceSessionId", "source_session_id")?;
+            let message_id: String = field(&args, "messageId", "message_id")?;
+            let result = crate::chat::fork_session_at_message(
+                app.clone(),
+                worktree_id,
+                worktree_path,
+                source_session_id,
+                message_id,
+            )
+            .await?;
+            to_value(result)
+        }
         "rename_session" => {
             let worktree_id: String = field(&args, "worktreeId", "worktree_id")?;
             let worktree_path: String = field(&args, "worktreePath", "worktree_path")?;

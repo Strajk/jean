@@ -718,6 +718,207 @@ pub async fn create_session(
     Ok(session)
 }
 
+// [STRAJK FORK] Fork a session at a specific assistant message.
+//
+// Creates a new session whose run history is the source session truncated to
+// (and including) the run that produced `message_id`. The new session inherits
+// the source's selected model/mode/thinking/provider so the next message uses
+// the same settings the user had in flight. The CLI session IDs (claude /
+// codex / cursor) of the LAST kept run become the new session's resume
+// pointers, so when the user sends a follow-up the underlying CLI actually
+// continues from that point — not display-only history.
+//
+// All transient/per-session UI state is reset (answered questions, fixed
+// findings, denials, queues, label, digest, plan approvals, etc.) because the
+// fork is a fresh branch in the user's workflow.
+//
+// See `.strajk/customizations/xx-fork-session.md` for intent.
+#[tauri::command]
+pub async fn fork_session_at_message(
+    app: AppHandle,
+    worktree_id: String,
+    worktree_path: String,
+    source_session_id: String,
+    message_id: String,
+) -> Result<Session, String> {
+    log::trace!("Forking session {source_session_id} at message {message_id}");
+
+    // 1. Load source metadata and locate the run whose assistant_message_id
+    //    matches the requested message. We fork *up to and including* that run.
+    let source_metadata = load_metadata(&app, &source_session_id)?
+        .ok_or_else(|| format!("Source session not found: {source_session_id}"))?;
+
+    let run_index = source_metadata
+        .runs
+        .iter()
+        .position(|r| r.assistant_message_id.as_deref() == Some(&message_id))
+        .ok_or_else(|| {
+            format!("Assistant message {message_id} not found in source session runs")
+        })?;
+
+    // Clone the kept slice and force every kept run to a clean Completed state.
+    // The fork inherits a static history; there are no live processes attached,
+    // and presence of `pid` / `codex_turn_id` would make the app try to tail or
+    // recover non-existent processes after restart.
+    let mut kept_runs: Vec<crate::chat::types::RunEntry> =
+        source_metadata.runs[..=run_index].to_vec();
+    for r in &mut kept_runs {
+        r.pid = None;
+        r.codex_turn_id = None;
+        r.status = crate::chat::types::RunStatus::Completed;
+        r.cancelled = false;
+        r.recovered = false;
+    }
+    let fork_message_count: u32 = kept_runs
+        .iter()
+        .map(|run| {
+            if run.assistant_message_id.is_some() {
+                2
+            } else {
+                1
+            }
+        })
+        .sum();
+
+    // The last kept run carries the per-run CLI session IDs Claude/Codex/Cursor
+    // assigned at that point. Promoting them to session-level fields lets the
+    // next send resume the actual CLI conversation from the fork point.
+    let last_run = kept_runs.last();
+    let new_claude_session_id = last_run.and_then(|r| r.claude_session_id.clone());
+    let new_codex_thread_id = last_run.and_then(|r| r.codex_thread_id.clone());
+    let new_cursor_chat_id = last_run.and_then(|r| r.cursor_chat_id.clone());
+    // OpenCode tracks session at session-level (not per-run); inherit as-is.
+    let new_opencode_session_id = source_metadata.opencode_session_id.clone();
+
+    let backend_for_session = source_metadata.backend.clone();
+    let source_name = source_metadata.name.clone();
+
+    // 2. Create the empty new session via with_sessions_mut and activate it.
+    let mut new_session = with_sessions_mut(&app, &worktree_path, &worktree_id, |sessions| {
+        let mut session = Session::new(
+            format!("{source_name} (fork)"),
+            sessions.sessions.len() as u32,
+            backend_for_session.clone(),
+        );
+        // Pre-populate settings on the in-memory Session so that the metadata
+        // persisted by with_sessions_mut already has them — avoids a window
+        // where the new session has empty model/provider/etc.
+        session.selected_model = source_metadata.selected_model.clone();
+        session.selected_thinking_level = source_metadata.selected_thinking_level.clone();
+        session.selected_provider = source_metadata.selected_provider.clone();
+        session.selected_execution_mode = source_metadata.selected_execution_mode.clone();
+        session.enabled_mcp_servers = source_metadata.enabled_mcp_servers.clone();
+        session.claude_session_id = new_claude_session_id.clone();
+        session.codex_thread_id = new_codex_thread_id.clone();
+        session.cursor_chat_id = new_cursor_chat_id.clone();
+        session.opencode_session_id = new_opencode_session_id.clone();
+        session.message_count = Some(fork_message_count);
+
+        let new_id = session.id.clone();
+        sessions.sessions.push(session.clone());
+        sessions.active_session_id = Some(new_id);
+        Ok(session)
+    })?;
+
+    let new_session_id = new_session.id.clone();
+
+    // 3. Copy the kept runs' NDJSON files. Each run has its own
+    //    {run_id}.jsonl, so duplicating only the kept ones gives the new
+    //    session the right visible history without bringing along the future.
+    let source_dir = get_session_dir(&app, &source_session_id)?;
+    let target_dir = get_session_dir(&app, &new_session_id)?;
+    for run in &kept_runs {
+        let src_path = source_dir.join(format!("{}.jsonl", run.run_id));
+        let dst_path = target_dir.join(format!("{}.jsonl", run.run_id));
+        if src_path.exists() {
+            std::fs::copy(&src_path, &dst_path)
+                .map_err(|e| format!("Failed to copy run log {}: {e}", run.run_id))?;
+        }
+    }
+
+    // 4. Overwrite the new session's metadata with the truncated run history
+    //    and clear any transient per-session state. with_sessions_mut wrote a
+    //    fresh metadata file with empty runs in step 2; we now fill it.
+    crate::chat::storage::with_existing_metadata_mut(&app, &new_session_id, |m| {
+        m.runs = kept_runs;
+        // Resume pointers (also set on Session above; reaffirm here in case
+        // update_from_session order differs).
+        m.claude_session_id = new_claude_session_id;
+        m.codex_thread_id = new_codex_thread_id;
+        m.cursor_chat_id = new_cursor_chat_id;
+        m.opencode_session_id = new_opencode_session_id;
+        // Inherited settings.
+        m.selected_model = source_metadata.selected_model.clone();
+        m.selected_thinking_level = source_metadata.selected_thinking_level.clone();
+        m.selected_provider = source_metadata.selected_provider.clone();
+        m.selected_execution_mode = source_metadata.selected_execution_mode.clone();
+        m.enabled_mcp_servers = source_metadata.enabled_mcp_servers.clone();
+        // Reset transient state — the fork is a fresh branch, not a clone of UI state.
+        m.session_naming_completed = false;
+        m.answered_questions.clear();
+        m.submitted_answers.clear();
+        m.fixed_findings.clear();
+        m.review_results = None;
+        m.pending_permission_denials.clear();
+        m.pending_codex_permission_requests.clear();
+        m.pending_codex_command_approval_requests.clear();
+        m.pending_codex_user_input_requests.clear();
+        m.pending_codex_mcp_elicitation_requests.clear();
+        m.pending_codex_dynamic_tool_call_requests.clear();
+        m.denied_message_context = None;
+        m.queued_messages.clear();
+        m.highlights.clear();
+        m.label = None;
+        m.digest = None;
+        m.approved_plan_message_ids.clear();
+        m.plan_file_path = None;
+        m.pending_plan_message_id = None;
+        m.is_reviewing = false;
+        m.waiting_for_input = false;
+        m.waiting_for_input_type = None;
+        m.scheduled_wakeup = None;
+        m.archived_at = None;
+        m.archived_by_base_close = None;
+    })?;
+
+    // 5. Carry over GitHub issue / PR references attached to the source session.
+    if let Ok(issue_keys) = get_session_issue_refs(&app, &source_session_id) {
+        for key in &issue_keys {
+            if let Some(number_str) = key.rsplit('-').next() {
+                if let Ok(number) = number_str.parse::<u32>() {
+                    let repo_key = &key[..key.len() - number_str.len() - 1];
+                    let _ = add_issue_reference(&app, repo_key, number, &new_session_id);
+                }
+            }
+        }
+    }
+    if let Ok(pr_keys) = get_session_pr_refs(&app, &source_session_id) {
+        for key in &pr_keys {
+            if let Some(number_str) = key.rsplit('-').next() {
+                if let Ok(number) = number_str.parse::<u32>() {
+                    let repo_key = &key[..key.len() - number_str.len() - 1];
+                    let _ = add_pr_reference(&app, repo_key, number, &new_session_id);
+                }
+            }
+        }
+    }
+
+    let loaded = run_log::load_session_messages_window(&app, &new_session_id, Some(10), None)?;
+    new_session.last_message_at = loaded
+        .messages
+        .iter()
+        .map(|message| message.timestamp)
+        .max();
+    new_session.messages = loaded.messages;
+    new_session.message_count = Some(fork_message_count);
+    new_session.total_runs = loaded.total_runs;
+    new_session.loaded_run_start_index = loaded.loaded_run_start_index;
+
+    emit_sessions_cache_invalidation(&app);
+    Ok(new_session)
+}
+
+
 fn trigger_backend_queue_drain(
     app: AppHandle,
     worktree_id: String,

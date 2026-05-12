@@ -744,6 +744,89 @@ export function useCreateSession() {
 }
 
 /**
+ * [STRAJK FORK] Hook to fork a session at a specific assistant message.
+ *
+ * Creates a new session whose history is the source session truncated up to
+ * (and including) the given assistant message. The fork inherits the source's
+ * model/mode/thinking/provider settings and CLI session pointers, so the next
+ * message resumes the underlying CLI conversation from that point — not just
+ * a display-only copy.
+ *
+ * See `.strajk/customizations/xx-fork-session.md` for intent.
+ */
+export function useForkSessionAtMessage() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      worktreeId,
+      worktreePath,
+      sourceSessionId,
+      messageId,
+    }: {
+      worktreeId: string
+      worktreePath: string
+      sourceSessionId: string
+      messageId: string
+    }): Promise<Session> => {
+      if (!isTauri()) {
+        throw new Error('Not in Tauri context')
+      }
+
+      logger.debug('Forking session at message', {
+        worktreeId,
+        sourceSessionId,
+        messageId,
+      })
+      const session = await invoke<Session>('fork_session_at_message', {
+        worktreeId,
+        worktreePath,
+        sourceSessionId,
+        messageId,
+      })
+      logger.info('Session forked', {
+        sessionId: session.id,
+        sourceSessionId,
+      })
+      return session
+    },
+    onSuccess: (newSession, { worktreeId, worktreePath }) => {
+      const currentState = useChatStore.getState()
+      useChatStore.setState({
+        sessionWorktreeMap: {
+          ...currentState.sessionWorktreeMap,
+          [newSession.id]: worktreeId,
+        },
+        worktreePaths: {
+          ...currentState.worktreePaths,
+          [worktreeId]: worktreePath,
+        },
+      })
+      // Pre-populate session cache and append to sessions list (matches backend order).
+      queryClient.setQueryData(chatQueryKeys.session(newSession.id), newSession)
+      queryClient.setQueryData<WorktreeSessions>(
+        chatQueryKeys.sessions(worktreeId),
+        old => (old ? { ...old, sessions: [...old.sessions, newSession] } : old)
+      )
+      queryClient.invalidateQueries({
+        queryKey: chatQueryKeys.sessions(worktreeId),
+      })
+    },
+    onError: error => {
+      if (isWsDisconnectError(error)) return
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : 'Unknown error occurred'
+      logger.error('Failed to fork session', { error })
+      toast.error('Failed to fork session', { description: message })
+    },
+  })
+}
+
+/**
  * Hook to rename a session tab
  */
 export function useRenameSession() {

@@ -1,9 +1,12 @@
 import { memo, useCallback, useState } from 'react'
-import { Check, Copy } from 'lucide-react'
+import { Check, Copy, GitBranch } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { copyToClipboard } from '@/lib/clipboard'
+import { useChatStore } from '@/store/chat-store'
+import { useForkSessionAtMessage } from '@/services/chat'
 import { normalizePath } from '@/lib/path-utils'
 import { Markdown } from '@/components/ui/markdown'
+import { toast } from 'sonner'
 import type {
   ChatMessage,
   Question,
@@ -274,6 +277,58 @@ export const MessageItem = memo(function MessageItem({
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }, [message.content])
+
+  // [STRAJK FORK] Fork-at-message handler.
+  // Resolve from the owning session first so this works in modal/canvas views
+  // where the globally active worktree may be empty or different.
+  const forkMutation = useForkSessionAtMessage()
+  const handleForkAtMessage = useCallback(() => {
+    const {
+      activeWorktreeId,
+      activeWorktreePath,
+      sessionWorktreeMap,
+      worktreePaths,
+      setActiveSession,
+    } = useChatStore.getState()
+    const resolvedWorktreeId = sessionWorktreeMap[sessionId] ?? activeWorktreeId
+    const resolvedWorktreePath = resolvedWorktreeId
+      ? (worktreePaths[resolvedWorktreeId] ??
+        (resolvedWorktreeId === activeWorktreeId ? activeWorktreePath : null) ??
+        worktreePath)
+      : worktreePath
+    logger.info('[fork-at-message] click', {
+      sessionId,
+      messageId: message.id,
+      activeWorktreeId,
+      activeWorktreePath,
+      resolvedWorktreeId,
+      resolvedWorktreePath,
+    })
+    if (!resolvedWorktreeId || !resolvedWorktreePath) {
+      logger.warn('[fork-at-message] no worktree context, aborting')
+      toast.error('Failed to fork session', {
+        description: 'Could not resolve the worktree for this message.',
+      })
+      return
+    }
+    forkMutation.mutate(
+      {
+        worktreeId: resolvedWorktreeId,
+        worktreePath: resolvedWorktreePath,
+        sourceSessionId: sessionId,
+        messageId: message.id,
+      },
+      {
+        onSuccess: forked => {
+          logger.info('[fork-at-message] success', { forkedId: forked.id })
+          setActiveSession(resolvedWorktreeId, forked.id)
+        },
+        onError: err => {
+          logger.error('[fork-at-message] error', { err })
+        },
+      }
+    )
+  }, [forkMutation, sessionId, message.id, worktreePath])
 
   // Content for the message box (shared between user and assistant)
   const resolvedPlan = resolvePlanContent({
@@ -842,6 +897,24 @@ export const MessageItem = memo(function MessageItem({
               {copied ? 'Copied' : 'Copy message as markdown'}
             </TooltipContent>
           </Tooltip>
+          {/* [STRAJK FORK] Fork-at-message button. Sits next to the copy
+              button so users can branch a session from any past response
+              without leaving the message they're reading. Disabled while the
+              mutation is in flight to prevent double-clicks creating two
+              identical forks. */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={handleForkAtMessage}
+                disabled={forkMutation.isPending}
+                className="p-0.5 rounded text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <GitBranch className="size-3" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Fork session from this message</TooltipContent>
+          </Tooltip>
         </div>
       )}
     </>
@@ -855,7 +928,10 @@ export const MessageItem = memo(function MessageItem({
       )}
     >
       {message.role === 'user' ? (
-        <div className="relative group flex items-start gap-1 max-w-[85%] sm:max-w-[70%]" data-message-id={message.id}>
+        <div
+          className="relative group flex items-start gap-1 max-w-[85%] sm:max-w-[70%]"
+          data-message-id={message.id}
+        >
           {/* Copy to clipboard button - appears on hover */}
           {onCopyToInput && (
             <Tooltip>
@@ -905,7 +981,10 @@ export const MessageItem = memo(function MessageItem({
           </div>
         </div>
       ) : (
-        <div className="text-foreground/90 w-full min-w-0 break-words" data-message-id={message.id}>
+        <div
+          className="text-foreground/90 w-full min-w-0 break-words"
+          data-message-id={message.id}
+        >
           {messageBoxContent}
         </div>
       )}

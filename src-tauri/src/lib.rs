@@ -4054,6 +4054,8 @@ pub fn run() {
             chat::load_older_session_messages,
             chat::list_native_cli_sessions,
             chat::create_session,
+            // [STRAJK FORK] Fork a session at a specific assistant message.
+            chat::fork_session_at_message,
             chat::rename_session,
             chat::regenerate_session_name,
             chat::update_session_state,
