@@ -165,6 +165,12 @@ const SessionHistoryModal = lazy(() =>
     default: mod.SessionHistoryModal,
   }))
 )
+// [STRAJK FORK] Scratchpad — Cmd+J / Shift+Cmd+J markdown notes panel
+const Scratchpad = lazy(() =>
+  import('@/components/scratchpad/Scratchpad').then(mod => ({
+    default: mod.Scratchpad,
+  }))
+)
 import { Toaster } from '@/components/ui/sonner'
 import { BrowserSidePane } from '@/components/browser/BrowserSidePane'
 import { BrowserPanel } from '@/components/browser/BrowserPanel'
@@ -457,6 +463,10 @@ export function MainWindow() {
   )
   const sessionHistoryOpen = useUIStore(state => state.sessionHistoryOpen)
   const shouldRenderSessionHistoryModal = useRetainedMount(sessionHistoryOpen)
+  // [STRAJK FORK] Scratchpad — keep mounted once opened so its draft + cursor
+  // state survive a quick close/reopen.
+  const scratchpadScope = useUIStore(state => state.scratchpadOpen)
+  const shouldRenderScratchpad = useRetainedMount(scratchpadScope !== null)
 
   // On Windows, use smaller border radius and remove it when maximized
   // On other platforms, use rounded-xl only in native app mode
@@ -693,6 +703,11 @@ export function MainWindow() {
       {shouldRenderSessionHistoryModal && (
         <Suspense fallback={null}>
           <SessionHistoryModal />
+        </Suspense>
+      )}
+      {shouldRenderScratchpad && (
+        <Suspense fallback={null}>
+          <Scratchpad />
         </Suspense>
       )}
       <BranchConflictDialog />

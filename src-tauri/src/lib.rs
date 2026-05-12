@@ -57,6 +57,7 @@ mod opinionated;
 mod pi_cli;
 mod platform;
 mod projects;
+mod scratchpad;
 mod system_sounds;
 mod terminal;
 

@@ -55,6 +55,8 @@ export type KeybindingAction =
   | 'navigate_forward'
   | 'toggle_all_worktrees_expanded'
   | 'open_session_history'
+  | 'toggle_session_scratchpad'
+  | 'toggle_project_scratchpad'
 
 // Shortcut string format: "mod+key" where mod is cmd/ctrl
 // Examples: "mod+l", "mod+shift+p", "mod+1"
@@ -129,6 +131,8 @@ export const DEFAULT_KEYBINDINGS: KeybindingsMap = {
   navigate_forward: 'mod+bracketright',
   toggle_all_worktrees_expanded: 'mod+shift+w',
   open_session_history: 'mod+shift+h',
+  toggle_session_scratchpad: 'mod+j',
+  toggle_project_scratchpad: 'mod+shift+j',
 }
 
 // UI definitions for the settings pane
@@ -519,6 +523,22 @@ export const KEYBINDING_DEFINITIONS: KeybindingDefinition[] = [
     description: 'View all sessions across all projects sorted by last activity',
     default_shortcut: 'mod+shift+h',
     category: 'navigation',
+  },
+  {
+    action: 'toggle_session_scratchpad',
+    label: 'Toggle session scratchpad',
+    description:
+      'Open/close a markdown scratchpad scoped to the current session',
+    default_shortcut: 'mod+j',
+    category: 'chat',
+  },
+  {
+    action: 'toggle_project_scratchpad',
+    label: 'Toggle project scratchpad',
+    description:
+      'Open/close a markdown scratchpad scoped to the current project',
+    default_shortcut: 'mod+shift+j',
+    category: 'chat',
   },
 ]
 

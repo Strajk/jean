@@ -2987,6 +2987,26 @@ pub async fn dispatch_command(
         }
 
         // =====================================================================
+        // [STRAJK FORK] Scratchpad commands
+        // =====================================================================
+        "read_scratchpad" => {
+            let scope: String = from_field(&args, "scope")?;
+            let scope_id: String = field(&args, "scopeId", "scope_id")?;
+            let result = crate::scratchpad::read_scratchpad(app.clone(), scope, scope_id).await?;
+            to_value(result)
+        }
+        "write_scratchpad" => {
+            let scope: String = from_field(&args, "scope")?;
+            let scope_id: String = field(&args, "scopeId", "scope_id")?;
+            let content: String = from_field(&args, "content")?;
+            // Annotate the `?` unit return so Rust 2024's never-type-fallback change
+            // doesn't fail this dispatch arm (the `()` result is intentionally discarded).
+            let _: () =
+                crate::scratchpad::write_scratchpad(app.clone(), scope, scope_id, content).await?;
+            Ok(Value::Null)
+        }
+
+        // =====================================================================
         // Unknown command
         // =====================================================================
         _ => Err(format!("Unknown command: {command}")),

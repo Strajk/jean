@@ -682,6 +682,16 @@ function executeKeybindingAction(
       }
       break
     }
+    case 'toggle_session_scratchpad': {
+      logger.debug('Keybinding: toggle_session_scratchpad')
+      useUIStore.getState().toggleScratchpad('session')
+      break
+    }
+    case 'toggle_project_scratchpad': {
+      logger.debug('Keybinding: toggle_project_scratchpad')
+      useUIStore.getState().toggleScratchpad('project')
+      break
+    }
     case 'toggle_session_label': {
       logger.debug('Keybinding: toggle_session_label')
       // Works when a session is active (modal open or in session view) or on project canvas
@@ -747,6 +757,24 @@ export function useMainWindowEventListeners() {
 
       const keybindings = keybindingsRef.current
       const matchedAction = findKeybindingAction(shortcut, keybindings)
+
+      // [STRAJK FORK] Scratchpad — when focus is inside the scratchpad
+      // textarea, only the two toggle keybindings should fire globally. The
+      // capture-phase handler would otherwise eat shortcuts like Cmd+Enter
+      // (approve plan) before the textarea's local handler gets to interpret
+      // them as "submit this selection". The toggle keybindings still pass
+      // through so Cmd+J / Shift+Cmd+J close the panel from inside it.
+      const inScratchpad =
+        document.activeElement instanceof HTMLElement &&
+        document.activeElement.hasAttribute('data-scratchpad-textarea')
+      if (inScratchpad) {
+        if (
+          shortcut !== keybindings.toggle_session_scratchpad &&
+          shortcut !== keybindings.toggle_project_scratchpad
+        ) {
+          return
+        }
+      }
 
       // Cancel prompt should work even when modals are open
       if (matchedAction === 'cancel_prompt') {

@@ -245,6 +245,12 @@ interface UIState {
   setGitHubDashboardOpen: (open: boolean) => void
   sessionHistoryOpen: boolean
   setSessionHistoryOpen: (open: boolean) => void
+  // [STRAJK FORK] Scratchpad — Cmd+J / Shift+Cmd+J markdown notes panel.
+  // `null` = closed. `'session'` and `'project'` keep separate scratchpads so
+  // toggling between them remembers which scope you last looked at.
+  scratchpadOpen: 'session' | 'project' | null
+  setScratchpadOpen: (scope: 'session' | 'project' | null) => void
+  toggleScratchpad: (scope: 'session' | 'project') => void
 }
 
 // Store callback outside Zustand state to avoid serialization issues with
@@ -1063,6 +1069,26 @@ export const useUIStore = create<UIState>()(
               : { sessionHistoryOpen: open },
           undefined,
           'setSessionHistoryOpen'
+        ),
+
+      // [STRAJK FORK] Scratchpad
+      scratchpadOpen: null,
+      setScratchpadOpen: (scope: 'session' | 'project' | null) =>
+        set(
+          state =>
+            state.scratchpadOpen === scope
+              ? state
+              : { scratchpadOpen: scope },
+          undefined,
+          'setScratchpadOpen'
+        ),
+      toggleScratchpad: (scope: 'session' | 'project') =>
+        set(
+          state => ({
+            scratchpadOpen: state.scratchpadOpen === scope ? null : scope,
+          }),
+          undefined,
+          'toggleScratchpad'
         ),
     }),
     {
