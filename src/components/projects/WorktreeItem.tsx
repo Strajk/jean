@@ -29,6 +29,7 @@ import {
   groupCardsByStatus,
   statusConfig,
 } from '@/components/chat/session-card-utils'
+import { isUnread } from '@/lib/session-utils'
 import { useCanvasStoreState } from '@/components/chat/hooks/useCanvasStoreState'
 import {
   useGitStatus,
@@ -755,6 +756,12 @@ export function WorktreeItem({
                   </div>
                   {group.cards.map(card => {
                     const config = statusConfig[card.status]
+                    // "Finished" = same signal that drives the unread bell in the
+                    // top navbar (isActionable + not yet opened since last update).
+                    // Tint clears as soon as the session is opened.
+                    const isFinished = isUnread(card.session)
+                    const isActive = activeSessionId === card.session.id
+                    const isActiveSelected = isActive && isSelected
                     return (
                       <SidebarSessionContextMenu
                         key={card.session.id}
@@ -771,11 +778,18 @@ export function WorktreeItem({
                         <div
                           className={cn(
                             'flex items-center gap-1.5 pl-5 py-1 cursor-pointer text-sm truncate',
-                            activeSessionId === card.session.id && isSelected
-                              ? 'text-foreground bg-primary/10 font-medium'
-                              : activeSessionId === card.session.id
-                                ? 'text-foreground/80 hover:text-foreground hover:bg-accent/50'
-                                : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                            isActiveSelected &&
+                              'text-foreground bg-primary/10 font-medium',
+                            !isActiveSelected &&
+                              isActive &&
+                              'text-foreground/80 hover:text-foreground',
+                            !isActiveSelected &&
+                              !isActive &&
+                              'text-muted-foreground hover:text-foreground',
+                            !isActiveSelected &&
+                              (isFinished
+                                ? 'bg-green-500/[0.09] hover:bg-green-500/[0.15]'
+                                : 'hover:bg-accent/50')
                           )}
                           onClick={e => {
                             e.stopPropagation()
@@ -812,6 +826,9 @@ export function WorktreeItem({
               ))
             : flatCards.map(card => {
                 const config = statusConfig[card.status]
+                const isFinished = isUnread(card.session)
+                const isActive = activeSessionId === card.session.id
+                const isActiveSelected = isActive && isSelected
                 return (
                   <SidebarSessionContextMenu
                     key={card.session.id}
@@ -828,11 +845,18 @@ export function WorktreeItem({
                     <div
                       className={cn(
                         'flex items-center gap-1.5 pl-5 py-1 cursor-pointer text-sm truncate',
-                        activeSessionId === card.session.id && isSelected
-                          ? 'text-foreground bg-primary/10 font-medium'
-                          : activeSessionId === card.session.id
-                            ? 'text-foreground/80 hover:text-foreground hover:bg-accent/50'
-                            : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+                        isActiveSelected &&
+                          'text-foreground bg-primary/10 font-medium',
+                        !isActiveSelected &&
+                          isActive &&
+                          'text-foreground/80 hover:text-foreground',
+                        !isActiveSelected &&
+                          !isActive &&
+                          'text-muted-foreground hover:text-foreground',
+                        !isActiveSelected &&
+                          (isFinished
+                            ? 'bg-green-500/[0.09] hover:bg-green-500/[0.15]'
+                            : 'hover:bg-accent/50')
                       )}
                       onClick={e => {
                         e.stopPropagation()
