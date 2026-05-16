@@ -76,7 +76,8 @@ function tryOpenFileRef(text: string): boolean {
     console.log('[file-ref] no regex match', { trimmed, regex: FILE_LINE_RE })
     return false
   }
-  const path = match[1]!
+  const path = match[1] ?? ''
+  if (!path) return false
   const lineStr = match[2] // may be undefined when no line number was given
   const line = lineStr ? Number.parseInt(lineStr, 10) : undefined
   console.log('[file-ref] matched', { path, line })

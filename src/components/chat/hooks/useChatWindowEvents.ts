@@ -283,7 +283,9 @@ export function useChatWindowEvents({
     const handler = (e: Event) => {
       const mode = (e as CustomEvent).detail?.mode as string | undefined
       if (!mode) return
-      useChatStore.getState().setExecutionMode(activeSessionId, mode as 'plan' | 'build' | 'yolo')
+      useChatStore
+        .getState()
+        .setExecutionMode(activeSessionId, mode as 'plan' | 'build' | 'yolo')
       invoke('broadcast_session_setting', {
         sessionId: activeSessionId,
         key: 'executionMode',

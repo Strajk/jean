@@ -141,7 +141,11 @@ fn format_local_timestamp(ts: u64) -> String {
         let mut y = 1970i64;
         let mut remaining = days as i64;
         loop {
-            let days_in_year = if y % 4 == 0 && (y % 100 != 0 || y % 400 == 0) { 366 } else { 365 };
+            let days_in_year = if y % 4 == 0 && (y % 100 != 0 || y % 400 == 0) {
+                366
+            } else {
+                365
+            };
             if remaining < days_in_year {
                 break;
             }
@@ -149,7 +153,20 @@ fn format_local_timestamp(ts: u64) -> String {
             y += 1;
         }
         let leap = y % 4 == 0 && (y % 100 != 0 || y % 400 == 0);
-        let month_days = [31, if leap { 29 } else { 28 }, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        let month_days = [
+            31,
+            if leap { 29 } else { 28 },
+            31,
+            30,
+            31,
+            30,
+            31,
+            31,
+            30,
+            31,
+            30,
+            31,
+        ];
         let mut m = 0;
         for &md in &month_days {
             if remaining < md {
@@ -158,7 +175,14 @@ fn format_local_timestamp(ts: u64) -> String {
             remaining -= md;
             m += 1;
         }
-        format!("{:02}-{:02}-{} @ {:02}.{:02}", remaining + 1, m + 1, y, hour, min)
+        format!(
+            "{:02}-{:02}-{} @ {:02}.{:02}",
+            remaining + 1,
+            m + 1,
+            y,
+            hour,
+            min
+        )
     }
 }
 
@@ -227,9 +251,11 @@ fn get_or_create_nightshift_worktree(
         .clone();
 
     // Check if a "nightshift" worktree already exists for this project
-    if let Some(existing) = data.worktrees.iter().find(|w| {
-        w.project_id == project_id && w.name == "nightshift"
-    }) {
+    if let Some(existing) = data
+        .worktrees
+        .iter()
+        .find(|w| w.project_id == project_id && w.name == "nightshift")
+    {
         log::trace!("Reusing existing nightshift worktree: {}", existing.id);
         return Ok(existing.clone());
     }
@@ -238,7 +264,8 @@ fn get_or_create_nightshift_worktree(
     let worktree_name = "nightshift";
     let branch_name = "nightshift";
 
-    let project_worktrees_dir = get_project_worktrees_dir(&project.name, project.worktrees_dir.as_deref())?;
+    let project_worktrees_dir =
+        get_project_worktrees_dir(&project.name, project.worktrees_dir.as_deref())?;
     let worktree_path = project_worktrees_dir.join(worktree_name);
     let worktree_path_str = worktree_path
         .to_str()
@@ -265,8 +292,11 @@ fn get_or_create_nightshift_worktree(
     }
 
     // Run jean.json setup script if configured (e.g. `bun install`)
-    let (setup_output, setup_script, setup_success) =
-        crate::projects::git::run_setup_if_configured(&worktree_path_str, &project.path, branch_name);
+    let (setup_output, setup_script, setup_success) = crate::projects::git::run_setup_if_configured(
+        &worktree_path_str,
+        &project.path,
+        branch_name,
+    );
 
     // Register worktree in ProjectsData
     let worktree_id = uuid::Uuid::new_v4().to_string();
@@ -323,11 +353,7 @@ fn create_nightshift_session(
     let session_name = format!("{} - {}", format_local_timestamp(now()), check_name);
 
     let session = with_sessions_mut(app, &worktree.path, &worktree.id, |sessions| {
-        let mut session = Session::new(
-            session_name,
-            sessions.sessions.len() as u32,
-            backend,
-        );
+        let mut session = Session::new(session_name, sessions.sessions.len() as u32, backend);
         session.selected_model = config.model.clone();
         session.selected_provider = config.provider.clone();
         session.session_naming_completed = true; // Skip auto-naming for nightshift
@@ -569,7 +595,7 @@ pub fn execute_run(params: &RunParams<'_>) {
                     check_id: check_id.clone(),
                     status: RunStatus::Failed,
                     session_id: None,
-    
+
                     duration_secs: 0,
                     error: Some(format!("Failed to create session: {e}")),
                 });
@@ -637,7 +663,7 @@ pub fn execute_run(params: &RunParams<'_>) {
                     check_id: check_id.clone(),
                     status: RunStatus::Failed,
                     session_id: Some(c.session_id),
-    
+
                     duration_secs: start.elapsed().as_secs(),
                     error: c.error,
                 }
@@ -648,7 +674,7 @@ pub fn execute_run(params: &RunParams<'_>) {
                     check_id: check_id.clone(),
                     status: RunStatus::Failed,
                     session_id: Some(session.id.clone()),
-    
+
                     duration_secs: start.elapsed().as_secs(),
                     error: Some("Check timed out (10 minutes)".to_string()),
                 }
@@ -659,7 +685,7 @@ pub fn execute_run(params: &RunParams<'_>) {
                     check_id: check_id.clone(),
                     status: RunStatus::Failed,
                     session_id: Some(session.id.clone()),
-    
+
                     duration_secs: start.elapsed().as_secs(),
                     error: Some("Channel disconnected".to_string()),
                 }
@@ -774,8 +800,7 @@ pub fn start_single_check_run(
     check_id: &str,
 ) -> Result<String, String> {
     // Validate the check_id exists
-    find_check(check_id)
-        .ok_or_else(|| format!("Unknown check: {check_id}"))?;
+    find_check(check_id).ok_or_else(|| format!("Unknown check: {check_id}"))?;
 
     let data = load_projects_data(app)?;
     let project = data
@@ -873,10 +898,16 @@ fn check_and_run_scheduled(app: &AppHandle) {
 
         match start_run(app, &project.id, RunTrigger::Scheduled) {
             Ok(run_id) => {
-                log::trace!("Nightshift scheduler: started run {run_id} for {}", project.name);
+                log::trace!(
+                    "Nightshift scheduler: started run {run_id} for {}",
+                    project.name
+                );
             }
             Err(e) => {
-                log::error!("Nightshift scheduler: failed to start run for {}: {e}", project.name);
+                log::error!(
+                    "Nightshift scheduler: failed to start run for {}: {e}",
+                    project.name
+                );
             }
         }
     }

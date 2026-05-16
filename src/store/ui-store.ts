@@ -48,7 +48,7 @@ export type CliUpdateModalType =
   | null
 
 export interface PendingCliUpdate {
-  type: 'claude' | 'gh' | 'codex' | 'opencode'
+  type: 'claude' | 'gh' | 'codex' | 'opencode' | 'coderabbit'
   currentVersion: string
   latestVersion: string
   cliSource?: 'jean' | 'path'
@@ -1028,7 +1028,11 @@ export const useUIStore = create<UIState>()(
         ),
 
       setAvailableCliUpdates: (updates: PendingCliUpdate[]) =>
-        set({ availableCliUpdates: updates }, undefined, 'setAvailableCliUpdates'),
+        set(
+          { availableCliUpdates: updates },
+          undefined,
+          'setAvailableCliUpdates'
+        ),
 
       dismissCliUpdateNotice: (type: PendingCliUpdate['type']) =>
         set(

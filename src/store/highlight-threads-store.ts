@@ -18,11 +18,7 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-export type HighlightThreadStatus =
-  | 'streaming'
-  | 'done'
-  | 'error'
-  | 'cancelled'
+export type HighlightThreadStatus = 'streaming' | 'done' | 'error' | 'cancelled'
 
 export interface HighlightThread {
   id: string

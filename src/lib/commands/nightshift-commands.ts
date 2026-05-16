@@ -12,7 +12,14 @@ export const nightshiftCommands: AppCommand[] = [
     description: 'Run AI maintenance checks on the current project',
     icon: Moon,
     group: 'maintenance',
-    keywords: ['nightshift', 'maintenance', 'lint', 'review', 'checks', 'audit'],
+    keywords: [
+      'nightshift',
+      'maintenance',
+      'lint',
+      'review',
+      'checks',
+      'audit',
+    ],
     async execute() {
       const projectId = useProjectsStore.getState().selectedProjectId
       if (!projectId) {
@@ -27,7 +34,7 @@ export const nightshiftCommands: AppCommand[] = [
         toast.error(`Failed to start: ${error}`, { id: toastId })
       }
     },
-    isAvailable: (ctx) => ctx.hasSelectedProject(),
+    isAvailable: ctx => ctx.hasSelectedProject(),
   },
   {
     id: 'nightshift.view-runs',
@@ -42,6 +49,6 @@ export const nightshiftCommands: AppCommand[] = [
         useNightshiftStore.getState().openRunsModal(projectId)
       }
     },
-    isAvailable: (ctx) => ctx.hasSelectedProject(),
+    isAvailable: ctx => ctx.hasSelectedProject(),
   },
 ]

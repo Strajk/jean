@@ -273,7 +273,7 @@ export function buildFileTree(files: FlattenedFile[]): FileTreeNode[] {
     const parts = dirPath.split('/')
     const dir: FileTreeDir = {
       type: 'dir',
-      name: parts[parts.length - 1]!,
+      name: parts[parts.length - 1] ?? '',
       path: dirPath,
       children: [],
       additions: 0,
@@ -290,11 +290,18 @@ export function buildFileTree(files: FlattenedFile[]): FileTreeNode[] {
   }
 
   for (let i = 0; i < files.length; i++) {
-    const file = files[i]!
+    const file = files[i]
+    if (!file) continue
     const normalized = file.fileName.replace(/\\/g, '/')
     const slashIdx = normalized.lastIndexOf('/')
     const name = slashIdx === -1 ? normalized : normalized.slice(slashIdx + 1)
-    const fileNode: FileTreeFile = { type: 'file', name, path: normalized, file, index: i }
+    const fileNode: FileTreeFile = {
+      type: 'file',
+      name,
+      path: normalized,
+      file,
+      index: i,
+    }
     if (slashIdx === -1) {
       roots.push(fileNode)
     } else {
@@ -315,8 +322,12 @@ export function buildFileTree(files: FlattenedFile[]): FileTreeNode[] {
   sortNodes(roots)
 
   // Post-order pass: aggregate +/- stats up through the directory hierarchy
-  function computeStats(nodes: FileTreeNode[]): { additions: number; deletions: number } {
-    let additions = 0, deletions = 0
+  function computeStats(nodes: FileTreeNode[]): {
+    additions: number
+    deletions: number
+  } {
+    let additions = 0,
+      deletions = 0
     for (const node of nodes) {
       if (node.type === 'file') {
         additions += node.file.additions
@@ -349,11 +360,15 @@ export function getDirFileNames(nodes: FileTreeNode[]): string[] {
 /** Map @pierre/diffs file type back to backend git status string */
 export function diffTypeToStatus(type: string): string {
   switch (type) {
-    case 'new': return 'added'
-    case 'deleted': return 'deleted'
+    case 'new':
+      return 'added'
+    case 'deleted':
+      return 'deleted'
     case 'rename-pure':
-    case 'rename-changed': return 'renamed'
-    default: return 'modified'
+    case 'rename-changed':
+      return 'renamed'
+    default:
+      return 'modified'
   }
 }
 
@@ -388,11 +403,16 @@ const FileTreeNodes = memo(function FileTreeNodes({
       {nodes.map(node => {
         if (node.type === 'dir') {
           const isExpanded = filterActive || !collapsedDirs.has(node.path)
-          const dirFileNames = activeDiffType === 'uncommitted'
-            ? getDirFileNames(node.children)
-            : []
-          const selectedInDir = dirFileNames.filter(n => gitDiffSelectedFiles.has(n))
-          const allChecked = dirFileNames.length > 0 && selectedInDir.length === dirFileNames.length
+          const dirFileNames =
+            activeDiffType === 'uncommitted'
+              ? getDirFileNames(node.children)
+              : []
+          const selectedInDir = dirFileNames.filter(n =>
+            gitDiffSelectedFiles.has(n)
+          )
+          const allChecked =
+            dirFileNames.length > 0 &&
+            selectedInDir.length === dirFileNames.length
           const someChecked = selectedInDir.length > 0 && !allChecked
           return (
             <div key={node.path}>
@@ -400,19 +420,26 @@ const FileTreeNodes = memo(function FileTreeNodes({
                 type="button"
                 onClick={() => onToggleDir(node.path)}
                 className="w-full flex items-center gap-1.5 py-1 text-left hover:bg-muted/50 text-muted-foreground"
-                style={{ paddingLeft: `${8 + depth * 12}px`, paddingRight: '8px' }}
+                style={{
+                  paddingLeft: `${8 + depth * 12}px`,
+                  paddingRight: '8px',
+                }}
               >
                 {activeDiffType === 'uncommitted' && (
                   <div
                     role="checkbox"
-                    aria-checked={allChecked ? true : someChecked ? 'mixed' : false}
+                    aria-checked={
+                      allChecked ? true : someChecked ? 'mixed' : false
+                    }
                     onClick={e => {
                       e.stopPropagation()
                       const store = useUIStore.getState()
                       if (someChecked || allChecked) {
-                        for (const n of selectedInDir) store.toggleGitDiffSelectedFile(n)
+                        for (const n of selectedInDir)
+                          store.toggleGitDiffSelectedFile(n)
                       } else {
-                        for (const n of dirFileNames) store.toggleGitDiffSelectedFile(n)
+                        for (const n of dirFileNames)
+                          store.toggleGitDiffSelectedFile(n)
                       }
                     }}
                     className={cn(
@@ -420,8 +447,8 @@ const FileTreeNodes = memo(function FileTreeNodes({
                       allChecked
                         ? 'bg-primary border-primary text-primary-foreground'
                         : someChecked
-                        ? 'bg-primary/40 border-primary/60 text-primary-foreground'
-                        : 'border-muted-foreground/40 hover:border-muted-foreground'
+                          ? 'bg-primary/40 border-primary/60 text-primary-foreground'
+                          : 'border-muted-foreground/40 hover:border-muted-foreground'
                     )}
                   >
                     {allChecked && <Check className="h-2.5 w-2.5" />}
@@ -471,7 +498,8 @@ const FileTreeNodes = memo(function FileTreeNodes({
         const { file, index } = node
         const isSelected = index === selectedFileIndex
         const isCheckedForCommit =
-          activeDiffType === 'uncommitted' && gitDiffSelectedFiles.has(file.fileName)
+          activeDiffType === 'uncommitted' &&
+          gitDiffSelectedFiles.has(file.fileName)
 
         const fileButton = (
           <button
@@ -504,9 +532,14 @@ const FileTreeNodes = memo(function FileTreeNodes({
               </div>
             )}
             <FileText
-              className={cn('h-[1em] w-[1em] shrink-0', getStatusColor(file.fileDiff.type))}
+              className={cn(
+                'h-[1em] w-[1em] shrink-0',
+                getStatusColor(file.fileDiff.type)
+              )}
             />
-            <span className="truncate flex-1 select-text cursor-text text-sm">{node.name}</span>
+            <span className="truncate flex-1 select-text cursor-text text-sm">
+              {node.name}
+            </span>
             <div className="flex items-center gap-1 shrink-0 text-xs">
               {file.additions > 0 && (
                 <span className="text-green-500">+{file.additions}</span>
@@ -1213,12 +1246,7 @@ export function GitDiffModal({
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [
-    diffRequest,
-    filteredFiles,
-    selectedFileIndex,
-    activeDiffType,
-  ])
+  }, [diffRequest, filteredFiles, selectedFileIndex, activeDiffType])
 
   // Scroll selected file into view in sidebar
   useEffect(() => {
@@ -1701,7 +1729,9 @@ export function GitDiffModal({
                               const displayName =
                                 displayNameMap.get(file.key) ??
                                 getFilename(file.fileName)
-                              const isCheckedForCommit = activeDiffType === 'uncommitted' && gitDiffSelectedFiles.has(file.fileName)
+                              const isCheckedForCommit =
+                                activeDiffType === 'uncommitted' &&
+                                gitDiffSelectedFiles.has(file.fileName)
                               return (
                                 <button
                                   key={file.key}
@@ -1712,7 +1742,9 @@ export function GitDiffModal({
                                     'w-full flex items-center gap-2 px-3 py-2.5 text-left transition-colors',
                                     'hover:bg-muted/50',
                                     isSelected && 'bg-accent',
-                                    isCheckedForCommit && !isSelected && 'bg-primary/10'
+                                    isCheckedForCommit &&
+                                      !isSelected &&
+                                      'bg-primary/10'
                                   )}
                                 >
                                   {activeDiffType === 'uncommitted' && (
@@ -1721,7 +1753,11 @@ export function GitDiffModal({
                                       aria-checked={isCheckedForCommit}
                                       onClick={e => {
                                         e.stopPropagation()
-                                        useUIStore.getState().toggleGitDiffSelectedFile(file.fileName)
+                                        useUIStore
+                                          .getState()
+                                          .toggleGitDiffSelectedFile(
+                                            file.fileName
+                                          )
                                       }}
                                       className={cn(
                                         'h-3.5 w-3.5 shrink-0 rounded-sm border flex items-center justify-center transition-colors cursor-pointer',
@@ -1844,7 +1880,11 @@ export function GitDiffModal({
                       className="flex-1 min-h-0"
                     >
                       {/* File sidebar */}
-                      <ResizablePanel defaultSize={25} minSize={15} maxSize={50}>
+                      <ResizablePanel
+                        defaultSize={25}
+                        minSize={15}
+                        maxSize={50}
+                      >
                         <div
                           ref={fileListRef}
                           className={cn(
@@ -1870,7 +1910,9 @@ export function GitDiffModal({
                                 <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex gap-0.5">
                                   <button
                                     type="button"
-                                    onClick={() => handleSetFileViewMode('flat')}
+                                    onClick={() =>
+                                      handleSetFileViewMode('flat')
+                                    }
                                     title="Flat list"
                                     className={cn(
                                       'p-1 rounded transition-colors',
@@ -1883,7 +1925,9 @@ export function GitDiffModal({
                                   </button>
                                   <button
                                     type="button"
-                                    onClick={() => handleSetFileViewMode('tree')}
+                                    onClick={() =>
+                                      handleSetFileViewMode('tree')
+                                    }
                                     title="Tree view"
                                     className={cn(
                                       'p-1 rounded transition-colors',
@@ -1919,7 +1963,9 @@ export function GitDiffModal({
                                   displayNameMap.get(file.key) ??
                                   getFilename(file.fileName)
 
-                                const isCheckedForCommit = activeDiffType === 'uncommitted' && gitDiffSelectedFiles.has(file.fileName)
+                                const isCheckedForCommit =
+                                  activeDiffType === 'uncommitted' &&
+                                  gitDiffSelectedFiles.has(file.fileName)
 
                                 const fileButton = (
                                   <button
@@ -1930,7 +1976,9 @@ export function GitDiffModal({
                                       'w-full flex items-center gap-2 px-3 py-2 text-left transition-colors',
                                       'hover:bg-muted/50',
                                       isSelected && 'bg-accent',
-                                      isCheckedForCommit && !isSelected && 'bg-primary/10'
+                                      isCheckedForCommit &&
+                                        !isSelected &&
+                                        'bg-primary/10'
                                     )}
                                   >
                                     {activeDiffType === 'uncommitted' && (
@@ -1939,7 +1987,11 @@ export function GitDiffModal({
                                         aria-checked={isCheckedForCommit}
                                         onClick={e => {
                                           e.stopPropagation()
-                                          useUIStore.getState().toggleGitDiffSelectedFile(file.fileName)
+                                          useUIStore
+                                            .getState()
+                                            .toggleGitDiffSelectedFile(
+                                              file.fileName
+                                            )
                                         }}
                                         className={cn(
                                           'h-3.5 w-3.5 shrink-0 rounded-sm border flex items-center justify-center transition-colors cursor-pointer',
@@ -1985,7 +2037,9 @@ export function GitDiffModal({
                                           {fileButton}
                                         </TooltipTrigger>
                                       </ContextMenuTrigger>
-                                      <TooltipContent>{file.fileName}</TooltipContent>
+                                      <TooltipContent>
+                                        {file.fileName}
+                                      </TooltipContent>
                                     </Tooltip>
                                     <ContextMenuContent className="w-48">
                                       <ContextMenuItem
@@ -2009,7 +2063,9 @@ export function GitDiffModal({
                                     <TooltipTrigger asChild>
                                       {fileButton}
                                     </TooltipTrigger>
-                                    <TooltipContent>{file.fileName}</TooltipContent>
+                                    <TooltipContent>
+                                      {file.fileName}
+                                    </TooltipContent>
                                   </Tooltip>
                                 )
                               })

@@ -192,7 +192,8 @@ export function Scratchpad() {
 
   if (!scope) return null
 
-  const heading = scope === 'session' ? 'Session scratchpad' : 'Project scratchpad'
+  const heading =
+    scope === 'session' ? 'Session scratchpad' : 'Project scratchpad'
   const emptyMessage =
     scope === 'session'
       ? 'Open a session to start a scratchpad. Notes are saved per session.'
@@ -203,11 +204,7 @@ export function Scratchpad() {
       {/* Click-outside backdrop. Transparent so the chat behind stays
           visible — a scratchpad is meant to sit alongside the conversation,
           not replace it. */}
-      <div
-        className="fixed inset-0 z-40"
-        onClick={close}
-        aria-hidden="true"
-      />
+      <div className="fixed inset-0 z-40" onClick={close} aria-hidden="true" />
       <div
         role="dialog"
         aria-label={heading}

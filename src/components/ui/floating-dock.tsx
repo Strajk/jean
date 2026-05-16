@@ -1,9 +1,4 @@
-import {
-  Fragment,
-  useState,
-  useEffect,
-  useCallback,
-} from 'react'
+import { Fragment, useState, useEffect, useCallback } from 'react'
 import {
   LayoutDashboard,
   Command,
@@ -396,7 +391,8 @@ export function FloatingDock() {
   const showKeybindingHints = isNativeApp() && !isMobile
 
   // Titlebar-integrated: render inline buttons, no floating container
-  const btnClass = 'h-6 w-6 rounded-none text-foreground/70 hover:text-foreground'
+  const btnClass =
+    'h-6 w-6 rounded-none text-foreground/70 hover:text-foreground'
   const tooltipSide = 'bottom' as const
   const menuAlign = 'start' as const
 
@@ -413,11 +409,7 @@ export function FloatingDock() {
         <Tooltip>
           <TooltipTrigger asChild>
             <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={btnClass}
-              >
+              <Button variant="ghost" size="icon" className={btnClass}>
                 <Menu className="size-3.5" />
                 <span className="sr-only">Quick menu</span>
               </Button>

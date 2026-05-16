@@ -917,7 +917,6 @@ pub async fn fork_session_at_message(
     Ok(new_session)
 }
 
-
 fn trigger_backend_queue_drain(
     app: AppHandle,
     worktree_id: String,
@@ -5720,6 +5719,16 @@ pub async fn open_file_in_default_app(
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x08000000;
 
+<<<<<<< HEAD
+=======
+        // Windows wraps .cmd shims through `cmd /c <bin> ...`. We prepend the wrapper
+        // tokens to whatever editor_cli_args returned.
+        let cmd_args_with = |bin: &str| -> Vec<String> {
+            let mut v = vec!["/c".to_string(), bin.to_string()];
+            v.extend(cli_args.iter().cloned());
+            v
+        };
+>>>>>>> 44be7f5f (fix(rebase): align customizations with upstream after sync)
         let result = match editor_app.as_str() {
             "zed" => std::process::Command::new("zed")
                 .args(editor_file_args("zed", &path, line, column))

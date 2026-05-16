@@ -176,15 +176,17 @@ function findTextRange(container: Element, searchText: string): Range | null {
   let endOffset = 0
 
   for (let i = 0; i < textNodes.length; i++) {
-    const nodeStart = offsets[i]!
-    const nodeEnd = nodeStart + (textNodes[i]!.textContent?.length ?? 0)
+    const nodeStart = offsets[i] ?? 0
+    const node = textNodes[i]
+    if (!node) continue
+    const nodeEnd = nodeStart + (node.textContent?.length ?? 0)
 
     if (!startNode && matchIndex < nodeEnd) {
-      startNode = textNodes[i]!
+      startNode = node
       startOffset = matchIndex - nodeStart
     }
     if (matchEnd <= nodeEnd) {
-      endNode = textNodes[i]!
+      endNode = node
       endOffset = matchEnd - nodeStart
       break
     }

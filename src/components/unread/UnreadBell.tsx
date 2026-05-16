@@ -1,9 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
-import {
-  BellDot,
-  Loader2,
-  CheckCircle2,
-} from 'lucide-react'
+import { BellDot, Loader2, CheckCircle2 } from 'lucide-react'
 import {
   Popover,
   PopoverTrigger,
@@ -68,7 +64,11 @@ export function UnreadBell({ title, hideTitle }: UnreadBellProps) {
 
   // Split actionable sessions into unread (top, full opacity) and read (bottom, dimmed)
   const { unreadItems, readItems } = useMemo(() => {
-    if (!allSessions) return { unreadItems: [] as SessionListItem[], readItems: [] as SessionListItem[] }
+    if (!allSessions)
+      return {
+        unreadItems: [] as SessionListItem[],
+        readItems: [] as SessionListItem[],
+      }
     const unread: SessionListItem[] = []
     const read: SessionListItem[] = []
     for (const entry of allSessions.entries) {
@@ -152,11 +152,14 @@ export function UnreadBell({ title, hideTitle }: UnreadBellProps) {
     [queryClient, unreadItems.length, markSessionsReadOptimistically]
   )
 
-  const handleSelect = useCallback((item: SessionListItem) => {
-    markSessionsReadOptimistically([item.session.id])
-    setOpen(false)
-    navigateToSession(item)
-  }, [markSessionsReadOptimistically])
+  const handleSelect = useCallback(
+    (item: SessionListItem) => {
+      markSessionsReadOptimistically([item.session.id])
+      setOpen(false)
+      navigateToSession(item)
+    },
+    [markSessionsReadOptimistically]
+  )
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -184,7 +187,11 @@ export function UnreadBell({ title, hideTitle }: UnreadBellProps) {
           if (!showDesktopKeyboardAffordances) break
           e.preventDefault()
           // Only mark-read works on unread items (first N in the list)
-          if (focusedIndex >= 0 && focusedIndex < unreadItems.length && unreadItems[focusedIndex]) {
+          if (
+            focusedIndex >= 0 &&
+            focusedIndex < unreadItems.length &&
+            unreadItems[focusedIndex]
+          ) {
             handleMarkOneRead(unreadItems[focusedIndex])
           }
           break

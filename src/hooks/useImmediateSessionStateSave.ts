@@ -66,8 +66,7 @@ export function useImmediateSessionStateSave() {
       const waitingChanged =
         waitingForInputSessionIds !== prevWaitingRef.current
       const labelsChanged = sessionLabels !== prevLabelsRef.current
-      const highlightsChanged =
-        sessionHighlights !== prevHighlightsRef.current
+      const highlightsChanged = sessionHighlights !== prevHighlightsRef.current
 
       if (
         !answeredChanged &&

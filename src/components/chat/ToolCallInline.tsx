@@ -136,7 +136,9 @@ export function ToolCallInline({
             <code className={TOOL_CALL_DETAIL_PILL_CLASS}>{detail}</code>
           ) : null}
           {isStreaming && isIncomplete ? (
-            <span title="Running"><Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" /></span>
+            <span title="Running">
+              <Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" />
+            </span>
           ) : (
             <ChevronRight
               className={cn(
@@ -150,16 +152,22 @@ export function ToolCallInline({
           <div className="border-t border-border/50 px-3 py-2 select-text cursor-text">
             {/* pre instead of div: inputs often contain bash scripts, paths, JSON — monospace aids readability */}
             {typeof expandedContent === 'string' ? (
-              <pre className="whitespace-pre-wrap text-xs font-mono text-muted-foreground">{stripAnsi(expandedContent)}</pre>
+              <pre className="whitespace-pre-wrap text-xs font-mono text-muted-foreground">
+                {stripAnsi(expandedContent)}
+              </pre>
             ) : (
-              <div className="text-xs text-muted-foreground">{expandedContent}</div>
+              <div className="text-xs text-muted-foreground">
+                {expandedContent}
+              </div>
             )}
             {shouldRenderRawOutput(toolCall) && (
               <>
                 <div className="border-t border-border/30 my-2" />
                 {/* "Output:" label omitted — the divider alone provides sufficient visual separation */}
                 <pre className="max-h-64 overflow-auto whitespace-pre-wrap text-xs font-mono text-foreground/80 bg-muted/50 rounded p-2">
-                  {toolCall.output ? stripAnsi(toolCall.output) : toolCall.output}
+                  {toolCall.output
+                    ? stripAnsi(toolCall.output)
+                    : toolCall.output}
                 </pre>
               </>
             )}
@@ -364,7 +372,9 @@ export function StackedGroup({
             {summary}
           </span>
           {isStreaming && isIncomplete ? (
-            <span title="Running"><Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" /></span>
+            <span title="Running">
+              <Loader2 className="ml-auto h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" />
+            </span>
           ) : (
             <ChevronRight
               className={cn(
@@ -508,16 +518,22 @@ function SubToolItem({ toolCall, onFileClick }: SubToolItemProps) {
           <div className="border-t border-border/30 px-2 py-1.5 select-text cursor-text">
             {/* pre instead of div: inputs often contain bash scripts, paths, JSON — monospace aids readability */}
             {typeof expandedContent === 'string' ? (
-              <pre className="whitespace-pre-wrap text-[0.625rem] font-mono text-muted-foreground/70">{stripAnsi(expandedContent)}</pre>
+              <pre className="whitespace-pre-wrap text-[0.625rem] font-mono text-muted-foreground/70">
+                {stripAnsi(expandedContent)}
+              </pre>
             ) : (
-              <div className="text-[0.625rem] text-muted-foreground/70">{expandedContent}</div>
+              <div className="text-[0.625rem] text-muted-foreground/70">
+                {expandedContent}
+              </div>
             )}
             {shouldRenderRawOutput(toolCall) && (
               <>
                 <div className="border-t border-border/20 my-1.5" />
                 {/* "Output:" label omitted — the divider alone provides sufficient visual separation */}
                 <pre className="max-h-40 overflow-auto whitespace-pre-wrap text-[0.625rem] font-mono text-foreground/70 bg-muted/30 rounded p-1.5">
-                  {toolCall.output ? stripAnsi(toolCall.output) : toolCall.output}
+                  {toolCall.output
+                    ? stripAnsi(toolCall.output)
+                    : toolCall.output}
                 </pre>
               </>
             )}

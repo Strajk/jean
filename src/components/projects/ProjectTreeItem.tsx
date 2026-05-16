@@ -238,21 +238,33 @@ export function ProjectTreeItem({ project }: ProjectTreeItemProps) {
               </TooltipTrigger>
               <TooltipContent className="max-w-80">
                 <p>{`Merge ${baseBranchBehindCount} new commit${baseBranchBehindCount > 1 ? 's' : ''} from origin/${project.default_branch}`}</p>
-                {gitStatus?.base_branch_incoming_commits && gitStatus.base_branch_incoming_commits.length > 0 && (
-                  <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
-                    {gitStatus.base_branch_incoming_commits.map((c: { hash: string; message: string }) => (
-                      <li key={c.hash} className="flex gap-1.5 text-[11px] leading-tight">
-                        <code className="shrink-0 text-muted-foreground">{c.hash}</code>
-                        <span className="truncate">{c.message}</span>
-                      </li>
-                    ))}
-                    {baseBranchBehindCount > gitStatus.base_branch_incoming_commits.length && (
-                      <li className="text-[11px] text-muted-foreground">
-                        ...and {baseBranchBehindCount - gitStatus.base_branch_incoming_commits.length} more
-                      </li>
-                    )}
-                  </ul>
-                )}
+                {gitStatus?.base_branch_incoming_commits &&
+                  gitStatus.base_branch_incoming_commits.length > 0 && (
+                    <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
+                      {gitStatus.base_branch_incoming_commits.map(
+                        (c: { hash: string; message: string }) => (
+                          <li
+                            key={c.hash}
+                            className="flex gap-1.5 text-[11px] leading-tight"
+                          >
+                            <code className="shrink-0 text-muted-foreground">
+                              {c.hash}
+                            </code>
+                            <span className="truncate">{c.message}</span>
+                          </li>
+                        )
+                      )}
+                      {baseBranchBehindCount >
+                        gitStatus.base_branch_incoming_commits.length && (
+                        <li className="text-[11px] text-muted-foreground">
+                          ...and{' '}
+                          {baseBranchBehindCount -
+                            gitStatus.base_branch_incoming_commits.length}{' '}
+                          more
+                        </li>
+                      )}
+                    </ul>
+                  )}
               </TooltipContent>
             </Tooltip>
           )}
@@ -271,21 +283,33 @@ export function ProjectTreeItem({ project }: ProjectTreeItemProps) {
               </TooltipTrigger>
               <TooltipContent className="max-w-80">
                 <p>{`Push ${baseBranchAheadCount} commit${baseBranchAheadCount > 1 ? 's' : ''} on ${project.default_branch}`}</p>
-                {gitStatus?.base_branch_unpushed_commits && gitStatus.base_branch_unpushed_commits.length > 0 && (
-                  <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
-                    {gitStatus.base_branch_unpushed_commits.map((c: { hash: string; message: string }) => (
-                      <li key={c.hash} className="flex gap-1.5 text-[11px] leading-tight">
-                        <code className="shrink-0 text-muted-foreground">{c.hash}</code>
-                        <span className="truncate">{c.message}</span>
-                      </li>
-                    ))}
-                    {baseBranchAheadCount > gitStatus.base_branch_unpushed_commits.length && (
-                      <li className="text-[11px] text-muted-foreground">
-                        ...and {baseBranchAheadCount - gitStatus.base_branch_unpushed_commits.length} more
-                      </li>
-                    )}
-                  </ul>
-                )}
+                {gitStatus?.base_branch_unpushed_commits &&
+                  gitStatus.base_branch_unpushed_commits.length > 0 && (
+                    <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
+                      {gitStatus.base_branch_unpushed_commits.map(
+                        (c: { hash: string; message: string }) => (
+                          <li
+                            key={c.hash}
+                            className="flex gap-1.5 text-[11px] leading-tight"
+                          >
+                            <code className="shrink-0 text-muted-foreground">
+                              {c.hash}
+                            </code>
+                            <span className="truncate">{c.message}</span>
+                          </li>
+                        )
+                      )}
+                      {baseBranchAheadCount >
+                        gitStatus.base_branch_unpushed_commits.length && (
+                        <li className="text-[11px] text-muted-foreground">
+                          ...and{' '}
+                          {baseBranchAheadCount -
+                            gitStatus.base_branch_unpushed_commits.length}{' '}
+                          more
+                        </li>
+                      )}
+                    </ul>
+                  )}
               </TooltipContent>
             </Tooltip>
           )}

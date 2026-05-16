@@ -30,10 +30,7 @@ import {
 import { useNightshiftStore } from '@/store/nightshift-store'
 import { useChatStore } from '@/store/chat-store'
 import { useNightshiftRuns } from '@/services/nightshift'
-import type {
-  NightshiftRun,
-  NightshiftRunStatus,
-} from '@/types/nightshift'
+import type { NightshiftRun, NightshiftRunStatus } from '@/types/nightshift'
 
 const STATUS_CONFIG: Record<
   string,
@@ -97,7 +94,9 @@ function StatusBadge({ status }: { status: NightshiftRunStatus }) {
     <Tooltip>
       <TooltipTrigger asChild>
         <Badge variant={config.variant} className={config.className}>
-          <Icon className={`h-3 w-3 mr-1${'spin' in config && config.spin ? ' animate-spin' : ''}`} />
+          <Icon
+            className={`h-3 w-3 mr-1${'spin' in config && config.spin ? ' animate-spin' : ''}`}
+          />
           {config.label}
         </Badge>
       </TooltipTrigger>
@@ -113,14 +112,22 @@ function formatDuration(secs: number): string {
   return remainSecs > 0 ? `${mins}m ${remainSecs}s` : `${mins}m`
 }
 
-function RunDetail({ run, onOpenSession }: { run: NightshiftRun; onOpenSession: (worktreeId: string, worktreePath: string, sessionId: string) => void }) {
+function RunDetail({
+  run,
+  onOpenSession,
+}: {
+  run: NightshiftRun
+  onOpenSession: (
+    worktreeId: string,
+    worktreePath: string,
+    sessionId: string
+  ) => void
+}) {
   const completedChecks = run.checkResults.filter(
-    (cr) => cr.status === 'completed'
+    cr => cr.status === 'completed'
   ).length
   const startDate = new Date(run.startedAt * 1000)
-  const duration = run.completedAt
-    ? run.completedAt - run.startedAt
-    : undefined
+  const duration = run.completedAt ? run.completedAt - run.startedAt : undefined
 
   return (
     <Collapsible>
@@ -144,15 +151,13 @@ function RunDetail({ run, onOpenSession }: { run: NightshiftRun; onOpenSession: 
           <div className="text-xs text-muted-foreground mt-0.5">
             {completedChecks}/{run.checkResults.length} checks completed
             {duration !== undefined ? ` · ${formatDuration(duration)}` : ''}
-            {run.branchName && (
-              <span className="ml-1">· {run.branchName}</span>
-            )}
+            {run.branchName && <span className="ml-1">· {run.branchName}</span>}
           </div>
         </div>
       </CollapsibleTrigger>
       <CollapsibleContent>
         <div className="pl-7 pr-3 pb-3 pt-2 space-y-2">
-          {run.checkResults.map((cr) => (
+          {run.checkResults.map(cr => (
             <div
               key={cr.checkId}
               className="flex items-center gap-2 p-2 rounded-md border border-border/50"
@@ -166,19 +171,27 @@ function RunDetail({ run, onOpenSession }: { run: NightshiftRun; onOpenSession: 
                   {formatDuration(cr.durationSecs)}
                 </span>
               )}
-              {cr.sessionId && run.worktreeId && run.worktreePath && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation() // Don't toggle collapsible
-                    onOpenSession(run.worktreeId!, run.worktreePath!, cr.sessionId!)
-                  }}
-                  className="text-xs text-blue-500 hover:text-blue-600 hover:underline flex items-center gap-0.5 cursor-pointer"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  Session
-                </button>
-              )}
+              {cr.sessionId &&
+                run.worktreeId &&
+                run.worktreePath &&
+                (() => {
+                  const worktreeId = run.worktreeId
+                  const worktreePath = run.worktreePath
+                  const sessionId = cr.sessionId
+                  return (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation() // Don't toggle collapsible
+                        onOpenSession(worktreeId, worktreePath, sessionId)
+                      }}
+                      className="text-xs text-blue-500 hover:text-blue-600 hover:underline flex items-center gap-0.5 cursor-pointer"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Session
+                    </button>
+                  )
+                })()}
               {cr.error && (
                 <span className="text-xs text-destructive truncate max-w-[200px]">
                   {cr.error}
@@ -265,8 +278,12 @@ export function NightshiftRunsModal() {
               palette.
             </div>
           )}
-          {runs.map((run) => (
-            <RunDetail key={run.id} run={run} onOpenSession={handleOpenSession} />
+          {runs.map(run => (
+            <RunDetail
+              key={run.id}
+              run={run}
+              onOpenSession={handleOpenSession}
+            />
           ))}
         </div>
       </DialogContent>

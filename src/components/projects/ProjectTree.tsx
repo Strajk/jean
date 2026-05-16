@@ -378,45 +378,54 @@ export function ProjectTree({ projects }: ProjectTreeProps) {
   const hasBothTypes = rootFolders.length > 0 && rootProjects.length > 0
   const anyWorktreesExpanded = expandedWorktreeIds.size > 0
 
-  const handleToggleAllWorktrees = useCallback((e: React.MouseEvent) => {
-    const withProjects = e.altKey
-    if (anyWorktreesExpanded) {
-      collapseAllWorktrees()
-      if (withProjects) {
-        useProjectsStore.setState({
-          expandedProjectIds: new Set<string>(),
-          expandedFolderIds: new Set<string>(),
-        })
-      }
-    } else {
-      const allWorktreeIds: string[] = []
-      const allProjectIds: string[] = []
-      const allFolderIds: string[] = []
-      for (const project of projects) {
-        if (isFolder(project)) {
-          allFolderIds.push(project.id)
-          continue
+  const handleToggleAllWorktrees = useCallback(
+    (e: React.MouseEvent) => {
+      const withProjects = e.altKey
+      if (anyWorktreesExpanded) {
+        collapseAllWorktrees()
+        if (withProjects) {
+          useProjectsStore.setState({
+            expandedProjectIds: new Set<string>(),
+            expandedFolderIds: new Set<string>(),
+          })
         }
-        allProjectIds.push(project.id)
-        const worktrees =
-          queryClient.getQueryData<{ id: string }[]>(
-            projectsQueryKeys.worktrees(project.id)
-          ) ?? []
-        for (const w of worktrees) {
-          allWorktreeIds.push(w.id)
+      } else {
+        const allWorktreeIds: string[] = []
+        const allProjectIds: string[] = []
+        const allFolderIds: string[] = []
+        for (const project of projects) {
+          if (isFolder(project)) {
+            allFolderIds.push(project.id)
+            continue
+          }
+          allProjectIds.push(project.id)
+          const worktrees =
+            queryClient.getQueryData<{ id: string }[]>(
+              projectsQueryKeys.worktrees(project.id)
+            ) ?? []
+          for (const w of worktrees) {
+            allWorktreeIds.push(w.id)
+          }
+        }
+        if (allWorktreeIds.length > 0) {
+          expandAllWorktrees(allWorktreeIds)
+        }
+        if (withProjects) {
+          useProjectsStore.setState({
+            expandedProjectIds: new Set(allProjectIds),
+            expandedFolderIds: new Set(allFolderIds),
+          })
         }
       }
-      if (allWorktreeIds.length > 0) {
-        expandAllWorktrees(allWorktreeIds)
-      }
-      if (withProjects) {
-        useProjectsStore.setState({
-          expandedProjectIds: new Set(allProjectIds),
-          expandedFolderIds: new Set(allFolderIds),
-        })
-      }
-    }
-  }, [anyWorktreesExpanded, collapseAllWorktrees, expandAllWorktrees, projects, queryClient])
+    },
+    [
+      anyWorktreesExpanded,
+      collapseAllWorktrees,
+      expandAllWorktrees,
+      projects,
+      queryClient,
+    ]
+  )
 
   // IDs for bulk expand/collapse actions (across all nesting levels)
   const allFolderIds = useMemo(

@@ -62,10 +62,7 @@ export function HighlightThreadPanel({ defaultModel }: Props) {
   useEffect(() => {
     if (!target) return
     const handleMouseDown = (e: MouseEvent) => {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(e.target as Node)
-      ) {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
         onClose()
       }
     }
@@ -109,9 +106,7 @@ export function HighlightThreadPanel({ defaultModel }: Props) {
         model: defaultModel,
       })
     } catch (e) {
-      useHighlightThreadsStore
-        .getState()
-        .markError(target.threadId, String(e))
+      useHighlightThreadsStore.getState().markError(target.threadId, String(e))
     }
   }, [target, draft, defaultModel])
 
@@ -146,13 +141,15 @@ export function HighlightThreadPanel({ defaultModel }: Props) {
   )
   // Show below the selection if there's room, otherwise above.
   const showBelow = target.y + PANEL_HEIGHT + 40 < window.innerHeight
-  const top = showBelow ? target.y + 28 : Math.max(8, target.y - PANEL_HEIGHT - 8)
+  const top = showBelow
+    ? target.y + 28
+    : Math.max(8, target.y - PANEL_HEIGHT - 8)
 
   const isStreaming = thread?.status === 'streaming'
   const isDone = thread?.status === 'done'
   const isError = thread?.status === 'error'
   const isCancelled = thread?.status === 'cancelled'
-  const showInput = !thread || target.isNew && !thread
+  const showInput = !thread || (target.isNew && !thread)
 
   return (
     <div

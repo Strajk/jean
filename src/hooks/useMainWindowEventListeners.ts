@@ -386,22 +386,36 @@ function executeKeybindingAction(
       break
     }
     case 'switch_model_haiku':
-      window.dispatchEvent(new CustomEvent('set-model', { detail: { model: 'haiku' } }))
+      window.dispatchEvent(
+        new CustomEvent('set-model', { detail: { model: 'haiku' } })
+      )
       break
     case 'switch_model_sonnet':
-      window.dispatchEvent(new CustomEvent('set-model', { detail: { model: 'sonnet' } }))
+      window.dispatchEvent(
+        new CustomEvent('set-model', { detail: { model: 'sonnet' } })
+      )
       break
     case 'switch_model_opus':
-      window.dispatchEvent(new CustomEvent('set-model', { detail: { model: 'claude-opus-4-7[1m]' } }))
+      window.dispatchEvent(
+        new CustomEvent('set-model', {
+          detail: { model: 'claude-opus-4-7[1m]' },
+        })
+      )
       break
     case 'switch_mode_plan':
-      window.dispatchEvent(new CustomEvent('set-execution-mode', { detail: { mode: 'plan' } }))
+      window.dispatchEvent(
+        new CustomEvent('set-execution-mode', { detail: { mode: 'plan' } })
+      )
       break
     case 'switch_mode_build':
-      window.dispatchEvent(new CustomEvent('set-execution-mode', { detail: { mode: 'build' } }))
+      window.dispatchEvent(
+        new CustomEvent('set-execution-mode', { detail: { mode: 'build' } })
+      )
       break
     case 'switch_mode_yolo':
-      window.dispatchEvent(new CustomEvent('set-execution-mode', { detail: { mode: 'yolo' } }))
+      window.dispatchEvent(
+        new CustomEvent('set-execution-mode', { detail: { mode: 'yolo' } })
+      )
       break
     case 'approve_plan': {
       logger.debug('Keybinding: approve_plan')
@@ -608,18 +622,16 @@ function executeKeybindingAction(
         // Cross-project: store intent in Zustand (survives component remount), then switch
         useUIStore
           .getState()
-          .markWorktreeForAutoOpenSession(
-            target.worktreeId,
-            target.sessionId
-          )
+          .markWorktreeForAutoOpenSession(target.worktreeId, target.sessionId)
         useProjectsStore.getState().selectProject(target.projectId)
       } else {
         // Same project: set active session, fire event for already-mounted ProjectCanvasView
         useChatStore
           .getState()
           .setActiveSession(target.worktreeId, target.sessionId)
-        const worktreePath =
-          useChatStore.getState().getWorktreePath(target.worktreeId)
+        const worktreePath = useChatStore
+          .getState()
+          .getWorktreePath(target.worktreeId)
         setTimeout(() => {
           window.dispatchEvent(
             new CustomEvent('open-session-modal', {
@@ -650,9 +662,7 @@ function executeKeybindingAction(
       } else {
         // Collect all worktree IDs from all non-folder projects in the query cache
         const projects =
-          queryClient.getQueryData<Project[]>(
-            projectsQueryKeys.list()
-          ) ?? []
+          queryClient.getQueryData<Project[]>(projectsQueryKeys.list()) ?? []
         const allWorktreeIds: string[] = []
         const allProjectIds: string[] = []
         const allFolderIds: string[] = []

@@ -51,8 +51,7 @@ pub fn all_checks() -> Vec<CheckDefinition> {
                 id: "security-audit".into(),
                 name: "Security Audit".into(),
                 description:
-                    "Find and fix security vulnerabilities (OWASP top 10, hardcoded secrets)"
-                        .into(),
+                    "Find and fix security vulnerabilities (OWASP top 10, hardcoded secrets)".into(),
                 category: CheckCategory::Security,
                 cost_tier: CostTier::High,
                 cooldown_hours: 168,
@@ -100,8 +99,9 @@ pub fn all_checks() -> Vec<CheckDefinition> {
             check: NightshiftCheck {
                 id: "error-handling".into(),
                 name: "Error Handling".into(),
-                description: "Improve error handling: missing catches, swallowed errors, poor messages"
-                    .into(),
+                description:
+                    "Improve error handling: missing catches, swallowed errors, poor messages"
+                        .into(),
                 category: CheckCategory::CodeQuality,
                 cost_tier: CostTier::Medium,
                 cooldown_hours: 48,

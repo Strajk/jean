@@ -24,8 +24,8 @@ pub mod wakeup;
 pub mod highlight_thread;
 
 pub use commands::*;
-pub use native_history::*;
 pub use highlight_thread::{cancel_highlight_thread, start_highlight_thread};
+pub use native_history::*;
 pub use storage::{preserve_base_sessions, restore_base_sessions, with_sessions_mut};
 
 use std::sync::atomic::{AtomicUsize, Ordering};

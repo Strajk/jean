@@ -67,8 +67,7 @@ export function SidebarSessionContextMenu({
   }, [session.id, onSessionSelect])
 
   const handleToggleReview = useCallback(() => {
-    const { reviewingSessions, setSessionReviewing } =
-      useChatStore.getState()
+    const { reviewingSessions, setSessionReviewing } = useChatStore.getState()
     const isReviewing =
       reviewingSessions[session.id] || !!session.review_results
     setSessionReviewing(session.id, !isReviewing)

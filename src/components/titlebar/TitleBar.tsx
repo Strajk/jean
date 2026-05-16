@@ -26,10 +26,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import {
-  CLI_DISPLAY_NAMES,
-  resolveCliPathUpdateAction,
-} from '@/lib/cli-update'
+import { CLI_DISPLAY_NAMES, resolveCliPathUpdateAction } from '@/lib/cli-update'
 import type { PendingCliUpdate } from '@/store/ui-store'
 import { toast } from 'sonner'
 import { formatShortcutDisplay, DEFAULT_KEYBINDINGS } from '@/types/keybindings'

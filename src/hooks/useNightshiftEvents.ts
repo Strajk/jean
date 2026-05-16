@@ -31,7 +31,7 @@ export function useNightshiftEvents() {
     const listeners: Promise<UnlistenFn>[] = []
 
     listeners.push(
-      listen<RunStartedPayload>('nightshift:run-started', (event) => {
+      listen<RunStartedPayload>('nightshift:run-started', event => {
         const { runId, projectId } = event.payload
         useNightshiftStore.getState().setActiveRun(projectId, runId)
       })
@@ -41,7 +41,7 @@ export function useNightshiftEvents() {
     // Checks can run for 30+ minutes — a persistent toast would obstruct the UI
     // (especially the prompt input area). Progress is visible in View History.
     listeners.push(
-      listen<CheckStartedPayload>('nightshift:check-started', (event) => {
+      listen<CheckStartedPayload>('nightshift:check-started', event => {
         const { runId, checkId, checkName } = event.payload
         useNightshiftStore.getState().setRunningCheck(runId, checkId)
         toast(`Running: ${checkName}`, { duration: 4000 })
@@ -50,7 +50,7 @@ export function useNightshiftEvents() {
 
     // Core orchestration: execute a check by sending a message in the session
     listeners.push(
-      listen<ExecuteCheckPayload>('nightshift:execute-check', async (event) => {
+      listen<ExecuteCheckPayload>('nightshift:execute-check', async event => {
         const {
           runId,
           checkId,
@@ -104,14 +104,14 @@ export function useNightshiftEvents() {
     )
 
     listeners.push(
-      listen<CheckDonePayload>('nightshift:check-done', (event) => {
+      listen<CheckDonePayload>('nightshift:check-done', event => {
         const { runId } = event.payload
         useNightshiftStore.getState().clearRunningCheck(runId)
       })
     )
 
     listeners.push(
-      listen<RunCompletedPayload>('nightshift:run-completed', (event) => {
+      listen<RunCompletedPayload>('nightshift:run-completed', event => {
         const { runId, projectId, status, totalChecks } = event.payload
         useNightshiftStore.getState().clearActiveRun(projectId)
         useNightshiftStore.getState().clearRunningCheck(runId)
@@ -149,7 +149,7 @@ export function useNightshiftEvents() {
     )
 
     listeners.push(
-      listen<RunFailedPayload>('nightshift:run-failed', (event) => {
+      listen<RunFailedPayload>('nightshift:run-failed', event => {
         const { runId, projectId, error } = event.payload
         useNightshiftStore.getState().clearActiveRun(projectId)
         useNightshiftStore.getState().clearRunningCheck(runId)
@@ -159,7 +159,7 @@ export function useNightshiftEvents() {
     )
 
     return () => {
-      listeners.forEach((l) => l.then((unlisten) => unlisten()))
+      listeners.forEach(l => l.then(unlisten => unlisten()))
     }
   }, [queryClient])
 }

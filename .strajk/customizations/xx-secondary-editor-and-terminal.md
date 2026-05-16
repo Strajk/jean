@@ -22,6 +22,7 @@ I bounce between multiple editors during the day. Cursor is my daily driver, Zed
 ## Why option A (one alt slot, opt-key shortcut), not the alternatives
 
 We considered a few designs before landing on this one:
+
 - **Sub-flyout per category** ("Editor ▸" → list of all enabled editors). More elegant for power users with many editors, but adds a hover/keystroke layer and more nav state.
 - **Flat list of every enabled editor and terminal** with letter shortcuts (`Z` Zed, `C` Cursor, `S` Sublime, `T` Terminal, `W` Warp, …). Maximally discoverable, but the modal grows long and the "default" gets visually demoted.
 - **Favorites array** (`editors: EditorApp[]`, `terminals: TerminalApp[]`). Most flexible, but requires multi-select UI in settings, migration of the existing scalar pref, and renderer changes for a variable number of rows.
@@ -35,5 +36,5 @@ If down the road I find myself wishing for a third or fourth editor/terminal in 
 - No multi-select / favorites array. Exactly one secondary per category.
 - No per-project override of editor/terminal — preference is global.
 - No auto-detection of installed editors. Selecting a secondary that isn't installed silently no-ops (or surfaces the same OS error as the primary path does today).
-- No new keyboard shortcut to *open* the "Open in" modal directly to the secondary — `Cmd+O` then `⌥E`/`⌥T` is the flow.
+- No new keyboard shortcut to _open_ the "Open in" modal directly to the secondary — `Cmd+O` then `⌥E`/`⌥T` is the flow.
 - No upstream PR for this. It's a power-user feature, easy to add per fork; it would clutter the settings pane for users who don't bounce between editors.

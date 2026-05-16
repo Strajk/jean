@@ -279,11 +279,11 @@ interface ChatUIState {
   sessionHighlights: Record<string, TextHighlight[]>
 
   // Browser-style navigation history (back/forward across sessions and projects)
-  navigationHistory: Array<{
+  navigationHistory: {
     projectId: string
     worktreeId: string
     sessionId: string
-  }>
+  }[]
   navigationIndex: number
 
   // Pending magic command to execute when ChatWindow mounts (from canvas navigation)
@@ -1285,11 +1285,7 @@ export const useChatStore = create<ChatUIState>()(
         if (navigationIndex <= 0) return null
         const newIndex = navigationIndex - 1
         const target = navigationHistory[newIndex]
-        set(
-          { navigationIndex: newIndex },
-          undefined,
-          'navigateBack'
-        )
+        set({ navigationIndex: newIndex }, undefined, 'navigateBack')
         return target
       },
 
@@ -1298,11 +1294,7 @@ export const useChatStore = create<ChatUIState>()(
         if (navigationIndex >= navigationHistory.length - 1) return null
         const newIndex = navigationIndex + 1
         const target = navigationHistory[newIndex]
-        set(
-          { navigationIndex: newIndex },
-          undefined,
-          'navigateForward'
-        )
+        set({ navigationIndex: newIndex }, undefined, 'navigateForward')
         return target
       },
 

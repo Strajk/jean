@@ -69,4 +69,3 @@ Per-project Linear settings keep the existing team-UUID field for the PAT backen
 - Writing to Linear (comments, status updates). mcporter's MCP supports it, but Jean today is read-only against Linear and adding writes is out of scope.
 - Bundling mcporter or auto-authing it. Users bring their own working mcporter setup.
 - Daemonizing mcporter for lower latency. Each call spawns a fresh `mcporter` process (~hundreds of ms). Acceptable for the modal-open and tab-open call sites; if it becomes painful, revisit with a long-lived connection.
-

@@ -3411,7 +3411,8 @@ pub fn tail_codex_output(
         }
     }
 
-    let has_content = !full_content.is_empty() || !content_blocks.is_empty() || !tool_calls.is_empty();
+    let has_content =
+        !full_content.is_empty() || !content_blocks.is_empty() || !tool_calls.is_empty();
 
     if !error_emitted && !error_lines.is_empty() && !has_content {
         let error_text = error_lines.join("\n");

@@ -842,7 +842,15 @@ export function SessionChatModal({
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, handleClose, closeConfirmOpen, preferences?.esc_closes_session, preferences?.confirm_session_close, sessions, currentSessionId])
+  }, [
+    isOpen,
+    handleClose,
+    closeConfirmOpen,
+    preferences?.esc_closes_session,
+    preferences?.confirm_session_close,
+    sessions,
+    currentSessionId,
+  ])
 
   if (!isOpen || !worktreeId) return null
 

@@ -273,7 +273,10 @@ export function NightshiftPane({
           <NativeSelect
             value={currentConfig.backend ?? ''}
             onChange={e =>
-              updateConfig({ backend: e.target.value || undefined, model: undefined })
+              updateConfig({
+                backend: e.target.value || undefined,
+                model: undefined,
+              })
             }
           >
             {BACKEND_OPTIONS.map(opt => (

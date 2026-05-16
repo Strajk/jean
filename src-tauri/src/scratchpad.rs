@@ -108,8 +108,7 @@ pub async fn list_non_empty_scratchpads(
     if !dir.exists() {
         return Ok(Vec::new());
     }
-    let entries = fs::read_dir(&dir)
-        .map_err(|e| format!("Failed to read scratchpad dir: {e}"))?;
+    let entries = fs::read_dir(&dir).map_err(|e| format!("Failed to read scratchpad dir: {e}"))?;
     let mut ids = Vec::new();
     for entry in entries.flatten() {
         let path = entry.path();

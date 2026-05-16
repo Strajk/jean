@@ -9,24 +9,39 @@ import {
 } from './GitDiffModal'
 
 // Minimal FlattenedFile factory for testing (fileDiff.type is only used by rendering, not buildFileTree)
-function file(fileName: string, i: number, additions = 0, deletions = 0): FlattenedFile {
+function file(
+  fileName: string,
+  i: number,
+  additions = 0,
+  deletions = 0
+): FlattenedFile {
   return {
     fileName,
     key: `${i}`,
     additions,
     deletions,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fileDiff: { type: 'change', hunks: [], splitLineCount: 0, unifiedLineCount: 0 } as any,
+    fileDiff: {
+      type: 'change',
+      hunks: [],
+      splitLineCount: 0,
+      unifiedLineCount: 0,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any,
   }
 }
 
 describe('diffTypeToStatus', () => {
   it('maps new → added', () => expect(diffTypeToStatus('new')).toBe('added'))
-  it('maps deleted → deleted', () => expect(diffTypeToStatus('deleted')).toBe('deleted'))
-  it('maps rename-pure → renamed', () => expect(diffTypeToStatus('rename-pure')).toBe('renamed'))
-  it('maps rename-changed → renamed', () => expect(diffTypeToStatus('rename-changed')).toBe('renamed'))
-  it('maps change → modified', () => expect(diffTypeToStatus('change')).toBe('modified'))
-  it('maps unknown → modified', () => expect(diffTypeToStatus('unknown-type')).toBe('modified'))
+  it('maps deleted → deleted', () =>
+    expect(diffTypeToStatus('deleted')).toBe('deleted'))
+  it('maps rename-pure → renamed', () =>
+    expect(diffTypeToStatus('rename-pure')).toBe('renamed'))
+  it('maps rename-changed → renamed', () =>
+    expect(diffTypeToStatus('rename-changed')).toBe('renamed'))
+  it('maps change → modified', () =>
+    expect(diffTypeToStatus('change')).toBe('modified'))
+  it('maps unknown → modified', () =>
+    expect(diffTypeToStatus('unknown-type')).toBe('modified'))
 })
 
 describe('buildFileTree', () => {
@@ -44,7 +59,10 @@ describe('buildFileTree', () => {
   })
 
   it('groups files under their parent directory', () => {
-    const tree = buildFileTree([file('src/index.ts', 0), file('src/utils.ts', 1)])
+    const tree = buildFileTree([
+      file('src/index.ts', 0),
+      file('src/utils.ts', 1),
+    ])
     expect(tree).toHaveLength(1)
     const src = tree[0] as FileTreeDir
     expect(src.type).toBe('dir')
@@ -131,10 +149,7 @@ describe('buildFileTree', () => {
   })
 
   it('handles mixed root and nested files', () => {
-    const tree = buildFileTree([
-      file('root.ts', 0),
-      file('src/index.ts', 1),
-    ])
+    const tree = buildFileTree([file('root.ts', 0), file('src/index.ts', 1)])
     // Sorted: dirs before files → src dir first, then root.ts
     expect(tree[0]?.type).toBe('dir')
     expect(tree[0]?.name).toBe('src')
@@ -213,10 +228,7 @@ describe('getDirFileNames', () => {
   })
 
   it('returns file names at all nesting depths', () => {
-    const tree = buildFileTree([
-      file('a/b/c/d.ts', 0),
-      file('a/e.ts', 1),
-    ])
+    const tree = buildFileTree([file('a/b/c/d.ts', 0), file('a/e.ts', 1)])
     const a = tree[0] as FileTreeDir
     const names = getDirFileNames(a.children).sort()
     expect(names).toEqual(['a/b/c/d.ts', 'a/e.ts'].sort())

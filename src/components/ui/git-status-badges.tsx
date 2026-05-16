@@ -90,8 +90,13 @@ export function GitStatusBadges({
             {incomingCommits && incomingCommits.length > 0 && (
               <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
                 {incomingCommits.map(c => (
-                  <li key={c.hash} className="flex gap-1.5 text-[11px] leading-tight">
-                    <code className="shrink-0 text-muted-foreground">{c.hash}</code>
+                  <li
+                    key={c.hash}
+                    className="flex gap-1.5 text-[11px] leading-tight"
+                  >
+                    <code className="shrink-0 text-muted-foreground">
+                      {c.hash}
+                    </code>
                     <span className="truncate">{c.message}</span>
                   </li>
                 ))}
@@ -122,8 +127,13 @@ export function GitStatusBadges({
             {unpushedCommits && unpushedCommits.length > 0 && (
               <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
                 {unpushedCommits.map(c => (
-                  <li key={c.hash} className="flex gap-1.5 text-[11px] leading-tight">
-                    <code className="shrink-0 text-muted-foreground">{c.hash}</code>
+                  <li
+                    key={c.hash}
+                    className="flex gap-1.5 text-[11px] leading-tight"
+                  >
+                    <code className="shrink-0 text-muted-foreground">
+                      {c.hash}
+                    </code>
                     <span className="truncate">{c.message}</span>
                   </li>
                 ))}

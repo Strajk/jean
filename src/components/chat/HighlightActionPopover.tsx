@@ -177,9 +177,7 @@ export function HighlightActionPopover({
           ) {
             // Find which highlight this range belongs to
             const rangeText = abstractRange.toString()
-            const matchingHighlight = highlights.find(
-              h => h.text === rangeText
-            )
+            const matchingHighlight = highlights.find(h => h.text === rangeText)
             if (!matchingHighlight) continue
 
             // Cancel any pending dismiss -- mouse is back on a highlight
@@ -345,12 +343,11 @@ export function HighlightActionPopover({
   // [STRAJK FORK] Open existing thread anchored to a hovered highlight.
   const handleOpenThread = useCallback(() => {
     if (popover?.type !== 'remove' || !popover.highlightId) return
-    const highlights = useChatStore.getState().sessionHighlights[sessionId] ?? []
+    const highlights =
+      useChatStore.getState().sessionHighlights[sessionId] ?? []
     const hl = highlights.find(h => h.id === popover.highlightId)
     if (!hl) return
-    const tid = useHighlightThreadsStore
-      .getState()
-      .threadByHighlight[hl.id]
+    const tid = useHighlightThreadsStore.getState().threadByHighlight[hl.id]
     if (!tid) return
     useHighlightThreadsStore.getState().openPanel({
       threadId: tid,
@@ -491,10 +488,7 @@ function clampPopoverPosition(rect: {
 function findMessageElement(node: Node): Element | null {
   let current: Node | null = node
   while (current) {
-    if (
-      current instanceof Element &&
-      current.hasAttribute('data-message-id')
-    ) {
+    if (current instanceof Element && current.hasAttribute('data-message-id')) {
       return current
     }
     current = current.parentNode

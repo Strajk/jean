@@ -111,10 +111,7 @@ export function SessionHistoryModal() {
             No sessions yet
           </div>
         ) : (
-          <div
-            ref={listRef}
-            className="overflow-y-auto flex-1 p-1"
-          >
+          <div ref={listRef} className="overflow-y-auto flex-1 p-1">
             {items.map((item, idx) => {
               const status = getSessionStatus(item.session)
               const StatusIcon = status?.icon ?? CheckCircle2

@@ -19,41 +19,40 @@ interface NightshiftState {
   closeRunsModal: () => void
 }
 
-export const useNightshiftStore = create<NightshiftState>()((set) => ({
+export const useNightshiftStore = create<NightshiftState>()(set => ({
   activeRuns: {},
   runningChecks: {},
   runsModalOpen: false,
   runsModalProjectId: null,
 
   setActiveRun: (projectId, runId) =>
-    set((state) => {
+    set(state => {
       if (state.activeRuns[projectId] === runId) return state
       return { activeRuns: { ...state.activeRuns, [projectId]: runId } }
     }),
 
-  clearActiveRun: (projectId) =>
-    set((state) => {
+  clearActiveRun: projectId =>
+    set(state => {
       if (!(projectId in state.activeRuns)) return state
       const { [projectId]: _, ...rest } = state.activeRuns
       return { activeRuns: rest }
     }),
 
   setRunningCheck: (runId, checkId) =>
-    set((state) => {
+    set(state => {
       if (state.runningChecks[runId] === checkId) return state
       return { runningChecks: { ...state.runningChecks, [runId]: checkId } }
     }),
 
-  clearRunningCheck: (runId) =>
-    set((state) => {
+  clearRunningCheck: runId =>
+    set(state => {
       if (!(runId in state.runningChecks)) return state
       const { [runId]: _, ...rest } = state.runningChecks
       return { runningChecks: rest }
     }),
 
-  openRunsModal: (projectId) =>
+  openRunsModal: projectId =>
     set({ runsModalOpen: true, runsModalProjectId: projectId }),
 
-  closeRunsModal: () =>
-    set({ runsModalOpen: false, runsModalProjectId: null }),
+  closeRunsModal: () => set({ runsModalOpen: false, runsModalProjectId: null }),
 }))

@@ -13,6 +13,7 @@ With many projects and worktrees, finding a specific session requires clicking t
 ### New file: `src/components/command-palette/SessionPalette.tsx`
 
 A new component using the same `cmdk` / `CommandDialog` pattern as the existing `CommandPalette.tsx`:
+
 - Uses the existing `useAllSessions()` TanStack Query hook to fetch sessions across all projects/worktrees
 - Flattens all sessions into a single list, **filtering out archived sessions** (`session.archived_at` is truthy)
 - Sorts by `updated_at` descending (most recent first)
@@ -27,6 +28,7 @@ A new component using the same `cmdk` / `CommandDialog` pattern as the existing 
 ### Navigation on select (race condition aware)
 
 When a session is selected, there are two code paths:
+
 - **Same project**: dispatches `open-worktree-modal` CustomEvent directly (canvas is mounted, listener exists)
 - **Different project**: uses `markWorktreeForAutoOpenSession(worktreeId, sessionId)` via Zustand, then calls `selectProject()`. The new `ProjectCanvasView` consumes the intent on mount via `consumeAutoOpenSession()`.
 

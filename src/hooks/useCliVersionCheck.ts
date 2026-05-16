@@ -6,25 +6,30 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   useClaudeCliStatus,
   useAvailableCliVersions,
   useClaudePathDetection,
+  claudeCliQueryKeys,
 } from '@/services/claude-cli'
 import {
   useGhCliStatus,
   useAvailableGhVersions,
   useGhPathDetection,
+  ghCliQueryKeys,
 } from '@/services/gh-cli'
 import {
   useCodexCliStatus,
   useAvailableCodexVersions,
   useCodexPathDetection,
+  codexCliQueryKeys,
 } from '@/services/codex-cli'
 import {
   useOpencodeCliStatus,
   useAvailableOpencodeVersions,
   useOpencodePathDetection,
+  opencodeCliQueryKeys,
 } from '@/services/opencode-cli'
 import {
   usePiCliStatus,
@@ -71,7 +76,6 @@ const CLI_QUERY_KEY_GETTERS: Record<CliType, () => readonly unknown[]> = {
   gh: () => ghCliQueryKeys.all,
   coderabbit: () => coderabbitCliQueryKeys.all,
 }
-
 
 /**
  * Resolve the effective CLI version/path/source by falling back to path detection
@@ -123,6 +127,7 @@ function resolveCliInfo(
  */
 export function useCliVersionCheck() {
   const shouldCheck = isNativeApp()
+  const queryClient = useQueryClient()
   const { data: preferences, isLoading: preferencesLoading } = usePreferences()
   const { data: claudePathInfo } = useClaudePathDetection({
     enabled: shouldCheck,
@@ -266,20 +271,28 @@ export function useCliVersionCheck() {
         .filter(c => {
           if (!c.info.version || !c.versions?.length) return false
           const latestStable = c.versions.find(v => !v.prerelease)
-          return latestStable && isNewerVersion(latestStable.version, c.info.version)
+          return (
+            latestStable && isNewerVersion(latestStable.version, c.info.version)
+          )
         })
         .map(c => c.type)
     )
 
-    const { setAvailableCliUpdates, availableCliUpdates } = useUIStore.getState()
-    const nextUpdates = availableCliUpdates.filter(u => currentlyOutdated.has(u.type))
+    const { setAvailableCliUpdates, availableCliUpdates } =
+      useUIStore.getState()
+    const nextUpdates = availableCliUpdates.filter(u =>
+      currentlyOutdated.has(u.type)
+    )
     for (const u of updates) {
       const idx = nextUpdates.findIndex(m => m.type === u.type)
       if (idx >= 0) nextUpdates[idx] = u
       else nextUpdates.push(u)
     }
 
-    if (nextUpdates.length !== availableCliUpdates.length || updates.length > 0) {
+    if (
+      nextUpdates.length !== availableCliUpdates.length ||
+      updates.length > 0
+    ) {
       if (updates.length > 0) logger.info('CLI updates available', { updates })
       setAvailableCliUpdates(nextUpdates)
     }
@@ -346,4 +359,3 @@ export function useCliVersionCheck() {
     return () => clearInterval(id)
   }, [shouldCheck, queryClient])
 }
-

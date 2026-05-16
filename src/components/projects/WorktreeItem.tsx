@@ -4,7 +4,14 @@ import type {
   IndicatorStatus,
   IndicatorVariant,
 } from '@/components/ui/status-indicator'
-import { ArrowDown, ArrowUp, ChevronDown, GitBranch, GitPullRequestArrow, StickyNote } from 'lucide-react'
+import {
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  GitBranch,
+  GitPullRequestArrow,
+  StickyNote,
+} from 'lucide-react'
 // [STRAJK FORK] Scratchpad indicator dots
 import { useNonEmptyScratchpads } from '@/services/scratchpads'
 import { cn } from '@/lib/utils'
@@ -326,7 +333,9 @@ export function WorktreeItem({
   // Flat chronological list (sorted by created_at, oldest first)
   const flatCards = useMemo(() => {
     if (!isExpanded || groupByStatus) return []
-    return [...allCards].sort((a, b) => a.session.created_at - b.session.created_at)
+    return [...allCards].sort(
+      (a, b) => a.session.created_at - b.session.created_at
+    )
   }, [isExpanded, groupByStatus, allCards])
 
   const handleChevronClick = useCallback(
@@ -370,7 +379,9 @@ export function WorktreeItem({
 
   // Label modal state for sidebar session context menu
   const [labelModalOpen, setLabelModalOpen] = useState(false)
-  const [labelTargetSessionId, setLabelTargetSessionId] = useState<string | null>(null)
+  const [labelTargetSessionId, setLabelTargetSessionId] = useState<
+    string | null
+  >(null)
   const labelTargetCard = useMemo(
     () => allCards.find(c => c.session.id === labelTargetSessionId),
     [allCards, labelTargetSessionId]
@@ -554,7 +565,7 @@ export function WorktreeItem({
 
   return (
     <>
-    <div>
+      <div>
       <WorktreeContextMenu
         worktree={worktree}
         projectId={projectId}
@@ -736,28 +747,91 @@ export function WorktreeItem({
         </div>
       </WorktreeContextMenu>
 
-      {/* Expandable session list — grouped by status or flat chronological */}
-      {isExpanded && (groupByStatus ? sessionGroups.length > 0 : flatCards.length > 0) && (
-        <div
-          className={cn(
-            'border-l border-border/40 py-0.5',
-            'ml-4'
-          )}
-        >
-          {groupByStatus
-            ? sessionGroups.map(group => (
-                <div key={group.key}>
-                  <div className="pl-3 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                    {group.title}{' '}
-                    <span className="text-muted-foreground/60">
-                      {group.cards.length}
-                    </span>
-                  </div>
-                  {group.cards.map(card => {
+        {/* Expandable session list — grouped by status or flat chronological */}
+        {isExpanded &&
+          (groupByStatus ? sessionGroups.length > 0 : flatCards.length > 0) && (
+            <div className={cn('border-l border-border/40 py-0.5', 'ml-4')}>
+              {groupByStatus
+                ? sessionGroups.map(group => (
+                    <div key={group.key}>
+                      <div className="pl-3 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
+                        {group.title}{' '}
+                        <span className="text-muted-foreground/60">
+                          {group.cards.length}
+                        </span>
+                      </div>
+                      {group.cards.map(card => {
+                        const config = statusConfig[card.status]
+                        // "Finished" = same signal that drives the unread bell in the
+                        // top navbar (isActionable + not yet opened since last update).
+                        // Tint clears as soon as the session is opened.
+                        const isFinished = isUnread(card.session)
+                        const isActive = activeSessionId === card.session.id
+                        const isActiveSelected = isActive && isSelected
+                        return (
+                          <SidebarSessionContextMenu
+                            key={card.session.id}
+                            card={card}
+                            worktreeId={worktree.id}
+                            onArchive={handleArchiveSession}
+                            onDelete={handleDeleteSession}
+                            onLabelOpen={id => {
+                              setLabelTargetSessionId(id)
+                              setLabelModalOpen(true)
+                            }}
+                            onSessionSelect={handleSessionSelect}
+                          >
+                            <div
+                              className={cn(
+                                'flex items-center gap-1.5 pl-5 py-1 cursor-pointer text-sm truncate',
+                                isActiveSelected &&
+                                  'text-foreground bg-primary/10 font-medium',
+                                !isActiveSelected &&
+                                  isActive &&
+                                  'text-foreground/80 hover:text-foreground',
+                                !isActiveSelected &&
+                                  !isActive &&
+                                  'text-muted-foreground hover:text-foreground',
+                                !isActiveSelected &&
+                                  (isFinished
+                                    ? 'bg-green-500/[0.09] hover:bg-green-500/[0.15]'
+                                    : 'hover:bg-accent/50')
+                              )}
+                              onClick={e => {
+                                e.stopPropagation()
+                                handleSessionSelect(card.session.id)
+                              }}
+                            >
+                              <StatusIndicator
+                                status={config.indicatorStatus}
+                                variant={config.indicatorVariant}
+                                title={config.label}
+                                className="h-1.5 w-1.5 shrink-0"
+                              />
+                              <span className="truncate text-xs">
+                                {card.session.name || 'Untitled'}
+                              </span>
+                              {sessionsWithScratchpad?.has(card.session.id) && (
+                                <StickyNote
+                                  className="h-3 w-3 shrink-0 text-muted-foreground/60"
+                                  aria-label="Has scratchpad notes"
+                                />
+                              )}
+                              {card.label && (
+                                <div
+                                  className="ml-auto h-2 w-2 shrink-0 rounded-full"
+                                  style={{ backgroundColor: card.label.color }}
+                                  title={card.label.name}
+                                />
+                              )}
+                            </div>
+                          </SidebarSessionContextMenu>
+                        )
+                      })}
+                    </div>
+                  ))
+                : flatCards.map(card => {
                     const config = statusConfig[card.status]
-                    // "Finished" = same signal that drives the unread bell in the
-                    // top navbar (isActionable + not yet opened since last update).
-                    // Tint clears as soon as the session is opened.
                     const isFinished = isUnread(card.session)
                     const isActive = activeSessionId === card.session.id
                     const isActiveSelected = isActive && isSelected
@@ -821,86 +895,19 @@ export function WorktreeItem({
                       </SidebarSessionContextMenu>
                     )
                   })}
-                </div>
-              ))
-            : flatCards.map(card => {
-                const config = statusConfig[card.status]
-                const isFinished = isUnread(card.session)
-                const isActive = activeSessionId === card.session.id
-                const isActiveSelected = isActive && isSelected
-                return (
-                  <SidebarSessionContextMenu
-                    key={card.session.id}
-                    card={card}
-                    worktreeId={worktree.id}
-                    onArchive={handleArchiveSession}
-                    onDelete={handleDeleteSession}
-                    onLabelOpen={id => {
-                      setLabelTargetSessionId(id)
-                      setLabelModalOpen(true)
-                    }}
-                    onSessionSelect={handleSessionSelect}
-                  >
-                    <div
-                      className={cn(
-                        'flex items-center gap-1.5 pl-5 py-1 cursor-pointer text-sm truncate',
-                        isActiveSelected &&
-                          'text-foreground bg-primary/10 font-medium',
-                        !isActiveSelected &&
-                          isActive &&
-                          'text-foreground/80 hover:text-foreground',
-                        !isActiveSelected &&
-                          !isActive &&
-                          'text-muted-foreground hover:text-foreground',
-                        !isActiveSelected &&
-                          (isFinished
-                            ? 'bg-green-500/[0.09] hover:bg-green-500/[0.15]'
-                            : 'hover:bg-accent/50')
-                      )}
-                      onClick={e => {
-                        e.stopPropagation()
-                        handleSessionSelect(card.session.id)
-                      }}
-                    >
-                      <StatusIndicator
-                        status={config.indicatorStatus}
-                        variant={config.indicatorVariant}
-                        title={config.label}
-                        className="h-1.5 w-1.5 shrink-0"
-                      />
-                      <span className="truncate text-xs">
-                        {card.session.name || 'Untitled'}
-                      </span>
-                      {sessionsWithScratchpad?.has(card.session.id) && (
-                        <StickyNote
-                          className="h-3 w-3 shrink-0 text-muted-foreground/60"
-                          aria-label="Has scratchpad notes"
-                        />
-                      )}
-                      {card.label && (
-                        <div
-                          className="ml-auto h-2 w-2 shrink-0 rounded-full"
-                          style={{ backgroundColor: card.label.color }}
-                          title={card.label.name}
-                        />
-                      )}
-                    </div>
-                  </SidebarSessionContextMenu>
-                )
-              })}
-        </div>
-      )}
-    </div>
+            </div>
+          )}
+      </div>
 
-    <LabelModal
-      isOpen={labelModalOpen}
-      onClose={() => {
-        setLabelModalOpen(false)
-        setLabelTargetSessionId(null)
-      }}
-      sessionId={labelTargetSessionId}
-      currentLabel={labelTargetCard?.label ?? null}
-    />
+      <LabelModal
+        isOpen={labelModalOpen}
+        onClose={() => {
+          setLabelModalOpen(false)
+          setLabelTargetSessionId(null)
+        }}
+        sessionId={labelTargetSessionId}
+        currentLabel={labelTargetCard?.label ?? null}
+      />
     </>
   )
 }

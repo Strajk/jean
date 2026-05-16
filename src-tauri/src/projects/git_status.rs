@@ -419,7 +419,12 @@ fn ref_exists(repo_path: &str, git_ref: &str) -> bool {
 
 /// List commit summaries (short hash + subject) between two refs
 /// Returns up to `limit` commits, newest first
-fn list_commits_between(repo_path: &str, from_ref: &str, to_ref: &str, limit: u32) -> Vec<CommitSummary> {
+fn list_commits_between(
+    repo_path: &str,
+    from_ref: &str,
+    to_ref: &str,
+    limit: u32,
+) -> Vec<CommitSummary> {
     let output = silent_command("git")
         .args([
             "log",
@@ -431,19 +436,17 @@ fn list_commits_between(repo_path: &str, from_ref: &str, to_ref: &str, limit: u3
         .output();
 
     match output {
-        Ok(o) if o.status.success() => {
-            String::from_utf8_lossy(&o.stdout)
-                .lines()
-                .filter(|line| !line.is_empty())
-                .map(|line| {
-                    let (hash, message) = line.split_once(' ').unwrap_or((line, ""));
-                    CommitSummary {
-                        hash: hash.to_string(),
-                        message: message.to_string(),
-                    }
-                })
-                .collect()
-        }
+        Ok(o) if o.status.success() => String::from_utf8_lossy(&o.stdout)
+            .lines()
+            .filter(|line| !line.is_empty())
+            .map(|line| {
+                let (hash, message) = line.split_once(' ').unwrap_or((line, ""));
+                CommitSummary {
+                    hash: hash.to_string(),
+                    message: message.to_string(),
+                }
+            })
+            .collect(),
         _ => vec![],
     }
 }
@@ -823,7 +826,10 @@ pub fn get_branch_status(info: &ActiveWorktreeInfo) -> Result<GitBranchStatus, S
             }
             let push_ref = format!("{remote}/{branch}");
             if ref_exists(repo_path, &push_ref) {
-                (count_commits_between(repo_path, &push_ref, "HEAD"), Some(push_ref))
+                (
+                    count_commits_between(repo_path, &push_ref, "HEAD"),
+                    Some(push_ref),
+                )
             } else {
                 (worktree_ahead_count, Some(base_branch.clone()))
             }
@@ -838,12 +844,18 @@ pub fn get_branch_status(info: &ActiveWorktreeInfo) -> Result<GitBranchStatus, S
                         let _ = fetch_origin_branch(repo_path, &current_branch);
                     }
                 }
-                (count_commits_between(repo_path, upstream, "HEAD"), Some(upstream.clone()))
+                (
+                    count_commits_between(repo_path, upstream, "HEAD"),
+                    Some(upstream.clone()),
+                )
             } else {
                 let _ = fetch_origin_branch(repo_path, &current_branch);
                 let origin_current_ref = format!("origin/{current_branch}");
                 if ref_exists(repo_path, &origin_current_ref) {
-                    (count_commits_between(repo_path, &origin_current_ref, "HEAD"), Some(origin_current_ref))
+                    (
+                        count_commits_between(repo_path, &origin_current_ref, "HEAD"),
+                        Some(origin_current_ref),
+                    )
                 } else {
                     (worktree_ahead_count, Some(base_branch.clone()))
                 }

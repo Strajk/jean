@@ -1143,7 +1143,9 @@ export function fitTerminal(terminalId: string): void {
     const rows = Math.max(1, dims.rows)
     applyNoWrapLayout(instance)
     instance.terminal.resize(NO_WRAP_COLS, rows)
-    invoke('terminal_resize', { terminalId, cols: NO_WRAP_COLS, rows }).catch(console.error)
+    invoke('terminal_resize', { terminalId, cols: NO_WRAP_COLS, rows }).catch(
+      console.error
+    )
   }
 }
 
@@ -1299,7 +1301,9 @@ export function setWordWrap(enabled: boolean): void {
       const rows = instance.terminal.rows
       applyNoWrapLayout(instance)
       instance.terminal.resize(NO_WRAP_COLS, rows)
-      invoke('terminal_resize', { terminalId, cols: NO_WRAP_COLS, rows }).catch(console.error)
+      invoke('terminal_resize', { terminalId, cols: NO_WRAP_COLS, rows }).catch(
+        console.error
+      )
     }
   }
 }

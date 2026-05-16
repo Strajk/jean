@@ -84,8 +84,7 @@ export const IntegrationsPane: React.FC = () => {
       patch.linear_mcporter_team = (localMcporterTeam ?? '').trim() || null
     }
     if (mcporterBinaryChanged) {
-      patch.linear_mcporter_binary =
-        (localMcporterBinary ?? '').trim() || null
+      patch.linear_mcporter_binary = (localMcporterBinary ?? '').trim() || null
     }
     if (Object.keys(patch).length === 0) return
     patchPreferences.mutate(patch, {
@@ -128,9 +127,9 @@ export const IntegrationsPane: React.FC = () => {
           label="Backend"
           description={
             <>
-              Choose how Jean reads Linear data. <strong>Personal API key</strong>{' '}
-              is the default. <strong>mcporter MCP</strong> shells out to your
-              authed{' '}
+              Choose how Jean reads Linear data.{' '}
+              <strong>Personal API key</strong> is the default.{' '}
+              <strong>mcporter MCP</strong> shells out to your authed{' '}
               <a
                 href="https://github.com/runebookai/mcporter"
                 target="_blank"
@@ -148,8 +147,7 @@ export const IntegrationsPane: React.FC = () => {
             onChange={e => {
               const next = e.target.value
               patchPreferences.mutate({
-                linear_backend:
-                  next === 'mcporter' ? 'mcporter' : null,
+                linear_backend: next === 'mcporter' ? 'mcporter' : null,
               })
             }}
             className="max-w-xs"
@@ -228,8 +226,8 @@ export const IntegrationsPane: React.FC = () => {
               label="Team key / name"
               description={
                 <>
-                  Optional. Filters issues to one team (e.g. <code>ENG</code>{' '}
-                  or <code>Backend</code>). Required for &ldquo;open by
+                  Optional. Filters issues to one team (e.g. <code>ENG</code> or{' '}
+                  <code>Backend</code>). Required for &ldquo;open by
                   number&rdquo; flows so Jean can build identifiers like{' '}
                   <code>ENG-123</code>. Leave empty to see issues from every
                   team you have access to.

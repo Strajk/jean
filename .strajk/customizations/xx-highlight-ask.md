@@ -25,7 +25,7 @@ sentence or term without disrupting the main task. Today the only way to do
 this is to type a follow-up message into the session — which:
 
 1. Pollutes the conversation history (Claude will treat the clarification as
-   context for the *next* turn).
+   context for the _next_ turn).
 2. Pushes the actual work off-screen.
 3. Feels heavy for a "btw" question.
 

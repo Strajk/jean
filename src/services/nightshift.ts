@@ -13,8 +13,7 @@ export const nightshiftQueryKeys = {
     [...nightshiftQueryKeys.all, 'config', projectId] as const,
   runs: (projectId: string) =>
     [...nightshiftQueryKeys.all, 'runs', projectId] as const,
-  run: (runId: string) =>
-    [...nightshiftQueryKeys.all, 'run', runId] as const,
+  run: (runId: string) => [...nightshiftQueryKeys.all, 'run', runId] as const,
 }
 
 /** Get all available built-in checks */
@@ -73,8 +72,13 @@ export function useStartNightshiftRun() {
 export function useStartNightshiftCheck() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ projectId, checkId }: { projectId: string; checkId: string }) =>
-      invoke<string>('nightshift_start_check', { projectId, checkId }),
+    mutationFn: ({
+      projectId,
+      checkId,
+    }: {
+      projectId: string
+      checkId: string
+    }) => invoke<string>('nightshift_start_check', { projectId, checkId }),
     onSuccess: (_, { projectId }) => {
       queryClient.invalidateQueries({
         queryKey: nightshiftQueryKeys.runs(projectId),

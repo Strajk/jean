@@ -179,9 +179,7 @@ const WordWrapToggle = memo(function WordWrapToggle() {
       onClick={handleToggle}
       className={cn(
         'flex h-full shrink-0 items-center px-2 transition-colors hover:bg-neutral-800/50',
-        wordWrap
-          ? 'text-neutral-200'
-          : 'text-neutral-500'
+        wordWrap ? 'text-neutral-200' : 'text-neutral-500'
       )}
       aria-label={wordWrap ? 'Disable word wrap' : 'Enable word wrap'}
       title={wordWrap ? 'Word wrap: on' : 'Word wrap: off'}

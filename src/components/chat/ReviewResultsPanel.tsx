@@ -443,14 +443,18 @@ Please apply all these fixes to the codebase.`
                       isFixed && 'opacity-50'
                     )}
                   >
-                    <span title={config.label}><Icon
-                      className={cn('h-3.5 w-3.5 shrink-0', config.color)}
-                    /></span>
+                    <span title={config.label}>
+                      <Icon
+                        className={cn('h-3.5 w-3.5 shrink-0', config.color)}
+                      />
+                    </span>
                     <span className="flex-1 truncate text-xs">
                       {finding.title}
                     </span>
                     {isFixed && (
-                      <span title="Fixed"><CheckCircle2 className="h-3 w-3 shrink-0 text-green-500" /></span>
+                      <span title="Fixed">
+                        <CheckCircle2 className="h-3 w-3 shrink-0 text-green-500" />
+                      </span>
                     )}
                   </button>
                 )

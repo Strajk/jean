@@ -17,7 +17,10 @@ interface StatusIndicatorProps {
   className?: string
 }
 
-function getDefaultTitle(status: IndicatorStatus, variant: IndicatorVariant): string {
+function getDefaultTitle(
+  status: IndicatorStatus,
+  variant: IndicatorVariant
+): string {
   if (status === 'running') {
     if (variant === 'destructive') return 'Running (yolo mode)'
     if (variant === 'loading') return 'Loading'

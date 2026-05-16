@@ -46,7 +46,7 @@ diverge-worthy.
   live processes are attached, and stale PIDs would make the app try to
   tail non-existent processes after restart).
 - **Naming**: `"{original name} (fork)"` with `session_naming_completed:
-  false` so auto-rename triggers on the first new message.
+false` so auto-rename triggers on the first new message.
 - **Activation**: Fork is immediately made the active session tab.
 - **Backends**: Works across all four backends (Claude, Codex, OpenCode,
   Cursor) — the per-run CLI ID promotion is the only backend-specific bit

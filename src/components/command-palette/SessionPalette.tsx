@@ -1,4 +1,10 @@
-import { useEffect, useState, useCallback, useMemo, type ReactNode } from 'react'
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  type ReactNode,
+} from 'react'
 import { defaultFilter } from 'cmdk'
 import { useUIStore } from '@/store/ui-store'
 // Kept after the session-utils refactor: SessionPalette's bare-`>` filter
@@ -99,9 +105,7 @@ function Highlight({
 
 export function SessionPalette() {
   const sessionPaletteOpen = useUIStore(state => state.sessionPaletteOpen)
-  const setSessionPaletteOpen = useUIStore(
-    state => state.setSessionPaletteOpen
-  )
+  const setSessionPaletteOpen = useUIStore(state => state.setSessionPaletteOpen)
   const [search, setSearch] = useState('')
 
   // Lazy-load sessions only when palette is open
@@ -200,10 +204,8 @@ export function SessionPalette() {
       if (projQuery) {
         projScore = defaultFilter(projText, projQuery)
       } else {
-        const activeProjectId =
-          useProjectsStore.getState().selectedProjectId
-        projScore =
-          activeProjectId && itemProjectId !== activeProjectId ? 0 : 1
+        const activeProjectId = useProjectsStore.getState().selectedProjectId
+        projScore = activeProjectId && itemProjectId !== activeProjectId ? 0 : 1
       }
       const sessScore = sessQuery ? defaultFilter(sessText, sessQuery) : 1
       return projScore && sessScore ? projScore * sessScore : 0

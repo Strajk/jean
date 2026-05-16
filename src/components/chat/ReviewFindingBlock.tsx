@@ -120,7 +120,9 @@ export function ReviewFindingBlock({
                 isExpanded && 'rotate-90'
               )}
             />
-            <span title={config.label}><Icon className={cn('h-4 w-4 shrink-0', config.color)} /></span>
+            <span title={config.label}>
+              <Icon className={cn('h-4 w-4 shrink-0', config.color)} />
+            </span>
             <Badge
               variant="outline"
               className={cn('text-xs', config.color, 'border-current')}
@@ -374,7 +376,9 @@ export function ReviewFindingsList({
       data-review-findings={unfixedCount > 0 ? 'unfixed' : 'all-fixed'}
     >
       <div className="flex items-center gap-2 mb-2">
-        <span title="Review findings"><AlertCircle className="h-4 w-4 text-muted-foreground" /></span>
+        <span title="Review findings">
+          <AlertCircle className="h-4 w-4 text-muted-foreground" />
+        </span>
         <span className="text-sm font-medium">
           {findings.length} finding{findings.length === 1 ? '' : 's'}
           {fixedCount > 0 && (

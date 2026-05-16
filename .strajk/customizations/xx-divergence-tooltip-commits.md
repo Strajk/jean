@@ -6,7 +6,7 @@
 
 The sister to `xx-push-tooltip-commit-list.md` (which already enriched the worktree-level unpushed tooltip). Three other pull/push tooltips in the app still show only a count:
 
-1. **Worktree pull badge** — "Merge N new commits from origin/{base}". Before pulling, it's useful to see *which* commits are about to land, since a pull can change the ground under an in-flight session (auto-stash, rebase, surprise upstream changes).
+1. **Worktree pull badge** — "Merge N new commits from origin/{base}". Before pulling, it's useful to see _which_ commits are about to land, since a pull can change the ground under an in-flight session (auto-stash, rebase, surprise upstream changes).
 2. **Project-line base-branch pull badge** — fires when local `main` drifts behind `origin/main` (e.g., someone pushed from a terminal or another machine). Same payoff as #1, but for the base branch the project sits on.
 3. **Project-line base-branch push badge** — fires when local `main` has commits not on `origin/main`. Helpful before pushing the base branch directly to confirm what's about to leave.
 

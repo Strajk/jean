@@ -520,7 +520,8 @@ export const KEYBINDING_DEFINITIONS: KeybindingDefinition[] = [
   {
     action: 'open_session_history',
     label: 'Session history',
-    description: 'View all sessions across all projects sorted by last activity',
+    description:
+      'View all sessions across all projects sorted by last activity',
     default_shortcut: 'mod+shift+h',
     category: 'navigation',
   },
