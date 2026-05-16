@@ -795,6 +795,14 @@ const magicPromptDefinitions: {
       'hidden handoff',
     ],
   },
+  {
+    // [strajk-fork] xx-recap-banner.md
+    key: 'recap_instruction',
+    title: 'End-of-turn Recap',
+    description:
+      'Instruction telling the assistant to end turns with a `## Recap` block.',
+    keywords: ['recap', 'end of turn', 'summary', 'compact view'],
+  },
 ]
 
 const magicPromptEntries: PreferenceSearchEntry[] = magicPromptDefinitions.map(

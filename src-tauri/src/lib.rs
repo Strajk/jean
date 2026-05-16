@@ -914,6 +914,10 @@ pub struct MagicPrompts {
     pub investigate_linear_issue: Option<String>,
     #[serde(default)]
     pub review_comments: Option<String>,
+    // [strajk-fork] User-overridable end-of-turn recap instruction. None = use
+    // built-in chat::RECAP_INSTRUCTION default. See xx-recap-banner.md.
+    #[serde(default)]
+    pub recap_instruction: Option<String>,
 }
 
 pub(crate) fn default_investigate_issue_prompt() -> String {

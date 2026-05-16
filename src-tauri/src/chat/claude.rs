@@ -588,7 +588,8 @@ fn build_claude_args(
     }
 
     // End-of-turn recap instruction (compact view surfaces this block)
-    system_prompt_parts.push(super::RECAP_INSTRUCTION.to_string());
+    // [strajk-fork] User-overridable via Settings → Magic Prompts → Recap.
+    system_prompt_parts.push(super::resolved_recap_instruction(app));
 
     // Collect all context files (issues and PRs) and concatenate into a single file
     let mut all_context_paths: Vec<std::path::PathBuf> = Vec::new();

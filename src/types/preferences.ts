@@ -79,6 +79,11 @@ export interface MagicPrompts {
   investigate_linear_issue: string | null
   /** Prompt for addressing inline PR review comments */
   review_comments: string | null
+  /**
+   * [strajk-fork] End-of-turn recap instruction injected into every session's
+   * system prompt. null = use built-in default. See xx-recap-banner.md.
+   */
+  recap_instruction: string | null
 }
 
 /** Default prompt for investigating GitHub issues */
@@ -539,6 +544,32 @@ When launching multiple Task subagents, prefer sending them in a single message 
 
 Instruct each sub-agent to briefly outline its approach before implementing, so it can course-correct early without formal plan mode overhead.`
 
+/**
+ * [strajk-fork] Default end-of-turn recap instruction. Must stay byte-identical
+ * to `RECAP_INSTRUCTION` in `src-tauri/src/chat/mod.rs` — the UI uses this for
+ * the textarea placeholder + "Reset to default" button; the actual injection is
+ * still done in Rust. See xx-recap-banner.md.
+ */
+export const DEFAULT_RECAP_INSTRUCTION = `## End-of-turn recap
+
+When you finish a turn that involved tool calls, edits, or multi-step work, end your response with a final markdown section like this:
+
+## Recap
+
+[If the user asked a question or requested a specific output, restate the actual answer/result here so the recap stands alone as the deliverable. Use a short paragraph, table, or list — whichever fits the answer best.]
+
+- 2-4 short bullets for context that doesn't fit above: caveats, follow-ups, unresolved questions, or files the user should review.
+
+[Optional \`### How to test\` subsection — include ONLY when the rules below say to.]
+
+Rules:
+- Heading must be the literal string \`## Recap\` on its own line.
+- Place it as the LAST block of the message, after any prose.
+- The recap is the user-facing deliverable — it must be self-contained. Include the actual answer/result inline. Do NOT write things like "I looked it up" or "see above" — restate the answer.
+- Add a \`### How to test\` subsection ONLY when the turn produced code, config, or behavior changes the user can verify. Make it actionable and specific (commands to run, UI flows to click through, files to inspect). OMIT the subsection entirely on read-only turns — questions, explanations, research, planning, code review without edits, or any turn where there is nothing meaningful to test. Do NOT include placeholder content like "N/A", "Nothing to test", "No tests needed", or an empty bullet list. If in doubt, leave it out.
+- Skip the recap entirely if the turn was a single one-line answer with no tool calls.
+- Do NOT repeat tool inputs, file diffs, or raw command output verbatim. Summarize.`
+
 /** Default global system prompt (must match DEFAULT_GLOBAL_SYSTEM_PROMPT in src-tauri) */
 export const DEFAULT_GLOBAL_SYSTEM_PROMPT = `### 1. Planning Guidance
 - For non-trivial tasks (3+ steps or architectural decisions), prefer planning before implementation when the current execution mode has not already authorized execution.
@@ -681,6 +712,7 @@ export const DEFAULT_MAGIC_PROMPTS: MagicPrompts = {
   investigate_advisory: null,
   investigate_linear_issue: null,
   review_comments: null,
+  recap_instruction: null,
 }
 
 /**

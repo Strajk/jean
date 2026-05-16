@@ -3000,7 +3000,8 @@ pub async fn send_chat_message(
                     }
 
                     // End-of-turn recap instruction (compact view surfaces this block)
-                    system_prompt_parts.push(super::RECAP_INSTRUCTION.to_string());
+                    // [strajk-fork] User-overridable via Settings → Magic Prompts → Recap.
+                    system_prompt_parts.push(super::resolved_recap_instruction(&thread_app));
 
                     // Keep the current Codex execution mode as the final authoritative
                     // instruction so persisted/global plan-mode defaults cannot pull an
@@ -3406,7 +3407,8 @@ pub async fn send_chat_message(
                     }
 
                     // End-of-turn recap instruction (compact view surfaces this block)
-                    system_prompt_parts.push(super::RECAP_INSTRUCTION.to_string());
+                    // [strajk-fork] User-overridable via Settings → Magic Prompts → Recap.
+                    system_prompt_parts.push(super::resolved_recap_instruction(&thread_app));
 
                     // Collect and inline context files (issues, PRs, saved contexts)
                     let mut context_content = String::new();
@@ -3753,7 +3755,8 @@ pub async fn send_chat_message(
                     }
 
                     // End-of-turn recap instruction (compact view surfaces this block)
-                    parts.push(super::RECAP_INSTRUCTION.to_string());
+                    // [strajk-fork] User-overridable via Settings → Magic Prompts → Recap.
+                    parts.push(super::resolved_recap_instruction(&thread_app));
 
                     if parts.is_empty() {
                         None

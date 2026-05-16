@@ -55,6 +55,28 @@ Rules:
 - Skip the recap entirely if the turn was a single one-line answer with no tool calls.
 - Do NOT repeat tool inputs, file diffs, or raw command output verbatim. Summarize.";
 
+// [strajk-fork] Resolve the recap instruction from user preferences, falling
+// back to `RECAP_INSTRUCTION` when not set or blank. The recap text is stored
+// as an *override* on MagicPrompts (Option<String>, None = default) so updates
+// to the default ship to users who haven't customized it. We re-read prefs from
+// disk because the surrounding call sites already do the same for sibling
+// fields like `global_system_prompt`. See xx-recap-banner.md.
+pub fn resolved_recap_instruction(app: &tauri::AppHandle) -> String {
+    if let Ok(prefs_path) = crate::get_preferences_path(app) {
+        if let Ok(contents) = std::fs::read_to_string(&prefs_path) {
+            if let Ok(prefs) = serde_json::from_str::<crate::AppPreferences>(&contents) {
+                if let Some(custom) = prefs.magic_prompts.recap_instruction.as_deref() {
+                    let trimmed = custom.trim();
+                    if !trimmed.is_empty() {
+                        return trimmed.to_string();
+                    }
+                }
+            }
+        }
+    }
+    RECAP_INSTRUCTION.to_string()
+}
+
 /// Global counter for active file tailers (sessions being streamed)
 static ACTIVE_TAILER_COUNT: once_cell::sync::Lazy<AtomicUsize> =
     once_cell::sync::Lazy::new(|| AtomicUsize::new(0));

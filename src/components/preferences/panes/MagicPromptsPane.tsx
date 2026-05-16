@@ -54,6 +54,7 @@ import {
   DEFAULT_PARALLEL_EXECUTION_PROMPT,
   DEFAULT_GLOBAL_SYSTEM_PROMPT,
   DEFAULT_PROVIDER_SWITCH_HANDOFF_PROMPT,
+  DEFAULT_RECAP_INSTRUCTION,
   DEFAULT_MAGIC_PROMPTS,
   DEFAULT_MAGIC_PROMPT_MODELS,
   DEFAULT_MAGIC_PROMPT_PROVIDERS,
@@ -478,6 +479,18 @@ const PROMPT_SECTIONS: PromptSection[] = [
           },
         ],
         defaultValue: DEFAULT_PROVIDER_SWITCH_HANDOFF_PROMPT,
+      },
+      {
+        // [strajk-fork] Recap instruction is appended to every session's system
+        // prompt across all backends; the compact-view component then extracts
+        // the `## Recap` block as the visible turn summary. Editable here so
+        // power users can shorten/translate/style the recap without rebuilding.
+        key: 'recap_instruction',
+        label: 'End-of-turn Recap',
+        description:
+          'Instruction appended to every session telling the assistant to terminate multi-step turns with a `## Recap` markdown block. The compact view surfaces that block as the visible summary.',
+        variables: [],
+        defaultValue: DEFAULT_RECAP_INSTRUCTION,
       },
     ],
   },
