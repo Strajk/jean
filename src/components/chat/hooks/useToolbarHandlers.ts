@@ -105,6 +105,11 @@ export function useToolbarHandlers({
         | 'commandcode',
       model: string
     ) => {
+      // Mirror the resolution chain ChatWindow uses to display the current mode
+      // (Zustand → persisted session field → preferences default → 'plan'). If we
+      // only read `session.selected_execution_mode`, new sessions (where that
+      // field is None on the Rust side) silently snap to 'plan' on every backend
+      // switch — even when the user's default is 'build' or 'yolo'.
       const currentMode =
         (activeSessionId
           ? useChatStore.getState().executionModes[activeSessionId]
