@@ -1020,7 +1020,8 @@ export async function attachToContainer(
     const cols = wordWrapEnabled ? safeCols : NO_WRAP_COLS
     if (!wordWrapEnabled) {
       applyNoWrapLayout(instance)
-      terminal.resize(cols, rows)
+      // No-wrap layout is xterm-only; ghostty-web isn't in the union's resize API
+      ;(terminal as XtermTerminal).resize(cols, rows)
     }
     console.log(
       `[terminal-instances] attachToContainer ${terminalId}: fit=${rawCols}x${rawRows} → used=${cols}x${rows}, initialized=${instance.initialized}, container=${container.clientWidth}x${container.clientHeight}`
@@ -1138,11 +1139,12 @@ export function fitTerminal(terminalId: string): void {
   } else {
     // Only recalculate rows from container height; keep wide cols and element width.
     // Don't call fitAddon.fit() — it would shrink the element back to container width.
-    const dims = instance.fitAddon.proposeDimensions()
+    // No-wrap layout is xterm-only (ghostty-web lacks proposeDimensions/resize here).
+    const dims = (instance.fitAddon as XtermFitAddon).proposeDimensions()
     if (!dims) return
     const rows = Math.max(1, dims.rows)
     applyNoWrapLayout(instance)
-    instance.terminal.resize(NO_WRAP_COLS, rows)
+    ;(instance.terminal as XtermTerminal).resize(NO_WRAP_COLS, rows)
     invoke('terminal_resize', { terminalId, cols: NO_WRAP_COLS, rows }).catch(
       console.error
     )
@@ -1250,13 +1252,15 @@ const NO_WRAP_COLS = 500
 function applyNoWrapLayout(instance: PersistentTerminal): void {
   // terminal/fitAddon may be null mid-lifecycle (upstream made them nullable)
   if (!instance.terminal || !instance.fitAddon) return
-  const el = instance.terminal.element
+  // No-wrap layout manipulates the .xterm element directly — xterm-only APIs
+  // (the union now includes ghostty-web, which doesn't expose element/proposeDimensions)
+  const el = (instance.terminal as XtermTerminal).element
   if (!el) return
   const container = el.parentElement as HTMLElement | null
   if (!container) return
 
   // Derive character width from fitAddon's proposed cols (based on container width)
-  const dims = instance.fitAddon.proposeDimensions()
+  const dims = (instance.fitAddon as XtermFitAddon).proposeDimensions()
   if (!dims) return
   const charWidth = container.clientWidth / dims.cols
   const wideWidth = Math.ceil(charWidth * NO_WRAP_COLS)
@@ -1273,7 +1277,8 @@ function applyNoWrapLayout(instance: PersistentTerminal): void {
  */
 function clearNoWrapLayout(instance: PersistentTerminal): void {
   if (!instance.terminal) return
-  const el = instance.terminal.element
+  // xterm-only element access (union now includes ghostty-web)
+  const el = (instance.terminal as XtermTerminal).element
   if (!el) return
   const container = el.parentElement as HTMLElement | null
   if (!container) return
@@ -1300,7 +1305,8 @@ export function setWordWrap(enabled: boolean): void {
       // Resize to wide cols, then widen the element so the canvas is fully visible
       const rows = instance.terminal.rows
       applyNoWrapLayout(instance)
-      instance.terminal.resize(NO_WRAP_COLS, rows)
+      // xterm-only resize (union now includes ghostty-web)
+      ;(instance.terminal as XtermTerminal).resize(NO_WRAP_COLS, rows)
       invoke('terminal_resize', { terminalId, cols: NO_WRAP_COLS, rows }).catch(
         console.error
       )
