@@ -212,7 +212,7 @@ async fn run_auto_fix_scan(app: &AppHandle) {
         );
         let archived_worktree_ids: Vec<String> = closed_worktree_ids
             .into_iter()
-            .chain(ineligible_worktree_ids.into_iter())
+            .chain(ineligible_worktree_ids)
             .collect();
         let archived_worktree_id_set: HashSet<String> =
             archived_worktree_ids.iter().cloned().collect();
@@ -598,6 +598,7 @@ fn project_from_pending_auto_yolo(entry: &PendingAutoYolo) -> Project {
         linear_team_id: None,
         linked_project_ids: Vec::new(),
         auto_fix_settings: None,
+        nightshift_config: None,
     }
 }
 
@@ -670,6 +671,7 @@ async fn approve_plan_and_start_yolo(
         None,
         None,
         Some(Some("yolo".to_string())),
+        None,
         None,
     )
     .await?;

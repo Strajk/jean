@@ -48,7 +48,8 @@ import { isNewerVersion } from '@/lib/version-utils'
 import { logger } from '@/lib/logger'
 import { isNativeApp } from '@/lib/environment'
 import { usePreferences } from '@/services/preferences'
-import type { CliType } from '@/lib/cli-update'
+import { invoke } from '@/lib/transport'
+import { resolveCliPathUpdateAction, type CliType } from '@/lib/cli-update'
 
 interface CliUpdateInfo {
   type: CliType
@@ -68,13 +69,29 @@ const JEAN_INSTALL_COMMANDS: Record<CliType, string> = {
   coderabbit: 'install_coderabbit_cli',
 }
 
-const CLI_QUERY_KEY_GETTERS: Record<CliType, () => readonly unknown[]> = {
-  claude: () => claudeCliQueryKeys.all,
-  codex: () => codexCliQueryKeys.all,
-  opencode: () => opencodeCliQueryKeys.all,
-  pi: () => piCliQueryKeys.all,
-  gh: () => ghCliQueryKeys.all,
-  coderabbit: () => coderabbitCliQueryKeys.all,
+async function runCliUpdate(update: CliUpdateInfo) {
+  if (update.cliSource === 'path') {
+    const action = resolveCliPathUpdateAction(
+      update.type,
+      update.cliPath,
+      update.packageManager,
+      update.latestVersion
+    )
+    if (!action) {
+      logger.warn('No CLI path update action available', { update })
+      return
+    }
+    await invoke('run_cli_path_update', {
+      command: action[0],
+      args: action[1],
+      cliType: update.type,
+    })
+    return
+  }
+
+  await invoke(JEAN_INSTALL_COMMANDS[update.type], {
+    version: update.latestVersion,
+  })
 }
 
 /**
@@ -264,8 +281,22 @@ export function useCliVersionCheck() {
       })
     }
 
+    const shouldAutoUpdate =
+      isInitialCheckRef.current &&
+      (preferences?.auto_update_ai_backends ?? true)
+
+    if (shouldAutoUpdate) {
+      for (const update of updates) {
+        runCliUpdate(update).catch(error => {
+          logger.warn('CLI auto-update failed', { update, error })
+        })
+      }
+    }
+
     // Sync store: remove CLIs no longer outdated (e.g. user updated manually),
-    // merge in newly detected updates.
+    // merge in newly detected updates. Auto-updated CLIs are omitted from the
+    // titlebar badge until a later poll confirms they are still outdated.
+    const badgeUpdates = shouldAutoUpdate ? [] : updates
     const currentlyOutdated = new Set(
       checks
         .filter(c => {
@@ -283,7 +314,7 @@ export function useCliVersionCheck() {
     const nextUpdates = availableCliUpdates.filter(u =>
       currentlyOutdated.has(u.type)
     )
-    for (const u of updates) {
+    for (const u of badgeUpdates) {
       const idx = nextUpdates.findIndex(m => m.type === u.type)
       if (idx >= 0) nextUpdates[idx] = u
       else nextUpdates.push(u)
@@ -291,9 +322,10 @@ export function useCliVersionCheck() {
 
     if (
       nextUpdates.length !== availableCliUpdates.length ||
-      updates.length > 0
+      badgeUpdates.length > 0
     ) {
-      if (updates.length > 0) logger.info('CLI updates available', { updates })
+      if (badgeUpdates.length > 0)
+        logger.info('CLI updates available', { updates: badgeUpdates })
       setAvailableCliUpdates(nextUpdates)
     }
 
@@ -336,6 +368,7 @@ export function useCliVersionCheck() {
     preferences?.pi_cli_source,
     preferences?.gh_cli_source,
     preferences?.coderabbit_cli_source,
+    preferences?.auto_update_ai_backends,
     queryClient,
   ])
 

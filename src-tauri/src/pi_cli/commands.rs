@@ -310,7 +310,7 @@ pub async fn get_available_pi_versions(_app: AppHandle) -> Result<Vec<PiReleaseI
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
-    versions.sort_by(|a, b| semver_parts(&b.version).cmp(&semver_parts(&a.version)));
+    versions.sort_by_key(|b| std::cmp::Reverse(semver_parts(&b.version)));
     Ok(versions)
 }
 

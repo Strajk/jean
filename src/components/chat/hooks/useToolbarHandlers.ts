@@ -47,6 +47,7 @@ interface UseToolbarHandlersParams {
         selected_cursor_model?: string
         selected_commandcode_model?: string
         custom_cli_profiles?: { name: string }[]
+        default_execution_mode?: ExecutionMode
       }
     | undefined
   queryClient: QueryClient

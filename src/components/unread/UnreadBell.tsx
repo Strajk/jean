@@ -32,6 +32,9 @@ interface UnreadBellProps {
 export function UnreadBell({ title, hideTitle }: UnreadBellProps) {
   const [open, setOpen] = useState(false)
   const [focusedIndex, setFocusedIndex] = useState(-1)
+  const [optimisticallyReadIds, setOptimisticallyReadIds] = useState<
+    Set<string>
+  >(() => new Set())
   const contentRef = useRef<HTMLDivElement>(null)
   const isMobile = useIsMobile()
   const showDesktopKeyboardAffordances = isNativeApp() && !isMobile
@@ -82,7 +85,7 @@ export function UnreadBell({ title, hideTitle }: UnreadBellProps) {
           worktreeName: entry.worktree_name,
           worktreePath: entry.worktree_path,
         }
-        if (isUnread(session)) {
+        if (isUnread(session) && !optimisticallyReadIds.has(session.id)) {
           unread.push(item)
         } else {
           read.push(item)
@@ -95,7 +98,7 @@ export function UnreadBell({ title, hideTitle }: UnreadBellProps) {
       unreadItems: unread.sort(byUpdated),
       readItems: read.sort(byUpdated),
     }
-  }, [allSessions])
+  }, [allSessions, optimisticallyReadIds])
 
   // Combined list for keyboard navigation (unread first, then read)
   const allItems = useMemo(
@@ -105,6 +108,11 @@ export function UnreadBell({ title, hideTitle }: UnreadBellProps) {
 
   const markSessionsReadOptimistically = useCallback(
     (sessionIds: string[]) => {
+      setOptimisticallyReadIds(prev => {
+        const next = new Set(prev)
+        for (const sessionId of sessionIds) next.add(sessionId)
+        return next
+      })
       const now = Math.floor(Date.now() / 1000)
       queryClient.setQueryData(['all-sessions'], old => {
         if (!old) return old

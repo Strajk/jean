@@ -330,6 +330,7 @@ export const AppearancePane: React.FC = () => {
               description="Translucent window with desktop blur (uses significant GPU)"
             >
               <Switch
+                aria-label="Window transparency"
                 checked={preferences?.window_vibrancy ?? false}
                 onCheckedChange={handleVibrancyChange}
                 disabled={patchPreferences.isPending || isVibrancyPending}
@@ -395,6 +396,7 @@ export const AppearancePane: React.FC = () => {
             description="Render user messages with a dark background and light text in light mode for higher contrast. Dark mode is unchanged."
           >
             <Switch
+              aria-label="Invert user messages in light theme"
               checked={preferences?.invert_user_messages ?? false}
               onCheckedChange={checked => {
                 if (preferences) {

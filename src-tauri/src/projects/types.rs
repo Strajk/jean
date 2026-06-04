@@ -338,6 +338,7 @@ impl Worktree {
             cached_worktree_ahead_count: None,
             cached_unpushed_count: None,
             order,
+            origin: None,
             labels: vec![],
             label: None,
             archived_at: None,

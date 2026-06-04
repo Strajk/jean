@@ -566,186 +566,208 @@ export function WorktreeItem({
   return (
     <>
       <div>
-      <WorktreeContextMenu
-        worktree={worktree}
-        projectId={projectId}
-        projectPath={projectPath}
-      >
-        <div
-          className={cn(
-            'group relative flex cursor-pointer items-center gap-1.5 py-1 pr-2 overflow-hidden transition-colors duration-150',
-            'pl-3',
-            isSelected
-              ? 'bg-primary/10 text-foreground before:absolute before:left-0 before:top-0 before:h-full before:w-[3px] before:bg-primary'
-              : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
-          )}
-          onClick={handleClick}
-          onDoubleClick={handleDoubleClick}
+        <WorktreeContextMenu
+          worktree={worktree}
+          projectId={projectId}
+          projectPath={projectPath}
         >
-          {/* Chat status indicator (spinner/dot) */}
-          <StatusIndicator
-            status={indicatorStatus}
-            variant={indicatorVariant}
-            className="h-2 w-2"
-          />
-
-          {/* Terminal running/failed indicator */}
-          <TerminalStatusIndicator worktreeId={worktree.id} />
-
-          {/* Workspace name - editable on double-click */}
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              type="text"
-              aria-label="Worktree name"
-              value={editValue}
-              onChange={e => setEditValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              onBlur={handleBlur}
-              onClick={e => e.stopPropagation()}
-              className="flex-1 bg-transparent text-base outline-none ring-1 ring-ring rounded px-1 md:text-sm"
+          <div
+            className={cn(
+              'group relative flex cursor-pointer items-center gap-1.5 py-1 pr-2 overflow-hidden transition-colors duration-150',
+              'pl-3',
+              isSelected
+                ? 'bg-primary/10 text-foreground before:absolute before:left-0 before:top-0 before:h-full before:w-[3px] before:bg-primary'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
+            )}
+            onClick={handleClick}
+            onDoubleClick={handleDoubleClick}
+          >
+            {/* Chat status indicator (spinner/dot) */}
+            <StatusIndicator
+              status={indicatorStatus}
+              variant={indicatorVariant}
+              className="h-2 w-2"
             />
-          ) : (
-            <span
-              className={cn(
-                'flex flex-1 items-center gap-0.5 truncate text-sm',
-                isBase && 'font-medium'
-              )}
-            >
-              <span className="truncate">{worktree.name}</span>
-              {/* Chevron for expand/collapse sessions */}
-              <button
-                type="button"
-                className="flex size-4 shrink-0 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-50 hover:!opacity-100 hover:bg-accent-foreground/10"
-                onClick={handleChevronClick}
+
+            {/* Terminal running/failed indicator */}
+            <TerminalStatusIndicator worktreeId={worktree.id} />
+
+            {/* Workspace name - editable on double-click */}
+            {isEditing ? (
+              <input
+                ref={inputRef}
+                type="text"
+                aria-label="Worktree name"
+                value={editValue}
+                onChange={e => setEditValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={handleBlur}
+                onClick={e => e.stopPropagation()}
+                className="flex-1 bg-transparent text-base outline-none ring-1 ring-ring rounded px-1 md:text-sm"
+              />
+            ) : (
+              <span
+                className={cn(
+                  'flex flex-1 items-center gap-0.5 truncate text-sm',
+                  isBase && 'font-medium'
+                )}
               >
-                <ChevronDown
-                  className={cn(
-                    'size-3 transition-transform',
-                    isExpanded && 'rotate-180'
-                  )}
-                />
-              </button>
-              {/* Show branch name when different from displayed name, and/or PR badge */}
-              {(() => {
-                const displayBranch =
-                  gitStatus?.current_branch ?? worktree.branch
-                return displayBranch !== worktree.name || worktree.pr_number ? (
-                  <span className="ml-0.5 inline-flex max-w-[80px] items-center gap-0.5 truncate text-xs text-muted-foreground">
-                    {displayBranch !== worktree.name && (
-                      <>
-                        <GitBranch className="h-2.5 w-2.5" />
-                        {displayBranch}
-                      </>
-                    )}
-                    {worktree.pr_number && (
-                      <>
-                        {displayBranch !== worktree.name && <span className="text-border">·</span>}
-                        <span
-                          className="inline-flex items-center gap-0.5 cursor-pointer hover:text-foreground transition-colors"
-                          onClick={e => {
-                            e.stopPropagation()
-                            if (worktree.pr_url) openExternal(worktree.pr_url)
-                          }}
-                        >
-                          <GitPullRequestArrow className="h-2.5 w-2.5" />
-                          #{worktree.pr_number}
-                        </span>
-                      </>
-                    )}
-                  </span>
-                ) : null
-              })()}
-            </span>
-          )}
-
-          {/* Pull badge - shown when behind remote */}
-          {behindCount > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
+                <span className="truncate">{worktree.name}</span>
+                {/* Chevron for expand/collapse sessions */}
                 <button
                   type="button"
-                  onClick={handlePull}
-                  className="shrink-0 text-[11px] font-medium text-primary transition-opacity hover:opacity-70"
+                  className="flex size-4 shrink-0 items-center justify-center rounded opacity-0 transition-opacity group-hover:opacity-50 hover:!opacity-100 hover:bg-accent-foreground/10"
+                  onClick={handleChevronClick}
                 >
-                  <span className="flex items-center gap-0.5">
-                    <ArrowDown className="h-3 w-3" />
-                    {behindCount}
-                  </span>
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-80">
-                <p>{`Merge ${behindCount} new commit${behindCount > 1 ? 's' : ''} from origin/${defaultBranch}`}</p>
-                {gitStatus?.incoming_commits && gitStatus.incoming_commits.length > 0 && (
-                  <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
-                    {gitStatus.incoming_commits.map((c: { hash: string; message: string }) => (
-                      <li key={c.hash} className="flex gap-1.5 text-[11px] leading-tight">
-                        <code className="shrink-0 text-muted-foreground">{c.hash}</code>
-                        <span className="truncate">{c.message}</span>
-                      </li>
-                    ))}
-                    {behindCount > gitStatus.incoming_commits.length && (
-                      <li className="text-[11px] text-muted-foreground">
-                        ...and {behindCount - gitStatus.incoming_commits.length} more
-                      </li>
+                  <ChevronDown
+                    className={cn(
+                      'size-3 transition-transform',
+                      isExpanded && 'rotate-180'
                     )}
-                  </ul>
-                )}
-              </TooltipContent>
-            </Tooltip>
-          )}
-
-          {/* Push badge - unpushed commits */}
-          {pushCount > 0 && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={handlePush}
-                  className="shrink-0 text-[11px] font-medium text-orange-500 transition-opacity hover:opacity-70"
-                >
-                  <span className="flex items-center gap-0.5">
-                    <ArrowUp className="h-3 w-3" />
-                    {pushCount}
-                  </span>
+                  />
                 </button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-80">
-                <p>{`Push ${pushCount} commit${pushCount > 1 ? 's' : ''} to remote`}</p>
-                {gitStatus?.unpushed_commits && gitStatus.unpushed_commits.length > 0 && (
-                  <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
-                    {gitStatus.unpushed_commits.map((c: { hash: string; message: string }) => (
-                      <li key={c.hash} className="flex gap-1.5 text-[11px] leading-tight">
-                        <code className="shrink-0 text-muted-foreground">{c.hash}</code>
-                        <span className="truncate">{c.message}</span>
-                      </li>
-                    ))}
-                    {pushCount > gitStatus.unpushed_commits.length && (
-                      <li className="text-[11px] text-muted-foreground">
-                        ...and {pushCount - gitStatus.unpushed_commits.length} more
-                      </li>
-                    )}
-                  </ul>
-                )}
-              </TooltipContent>
-            </Tooltip>
-          )}
+                {/* Show branch name when different from displayed name, and/or PR badge */}
+                {(() => {
+                  const displayBranch =
+                    gitStatus?.current_branch ?? worktree.branch
+                  return displayBranch !== worktree.name ||
+                    worktree.pr_number ? (
+                    <span className="ml-0.5 inline-flex max-w-[80px] items-center gap-0.5 truncate text-xs text-muted-foreground">
+                      {displayBranch !== worktree.name && (
+                        <>
+                          <GitBranch className="h-2.5 w-2.5" />
+                          {displayBranch}
+                        </>
+                      )}
+                      {worktree.pr_number && (
+                        <>
+                          {displayBranch !== worktree.name && (
+                            <span className="text-border">·</span>
+                          )}
+                          <span
+                            className="inline-flex items-center gap-0.5 cursor-pointer hover:text-foreground transition-colors"
+                            onClick={e => {
+                              e.stopPropagation()
+                              if (worktree.pr_url) openExternal(worktree.pr_url)
+                            }}
+                          >
+                            <GitPullRequestArrow className="h-2.5 w-2.5" />#
+                            {worktree.pr_number}
+                          </span>
+                        </>
+                      )}
+                    </span>
+                  ) : null
+                })()}
+              </span>
+            )}
 
-          {/* Uncommitted changes */}
-          {hasUncommitted && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-medium">
-                  <span className="text-green-500">+{uncommittedAdded}</span>
-                  <span className="text-muted-foreground">/</span>
-                  <span className="text-red-500">-{uncommittedRemoved}</span>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>{`Uncommitted: +${uncommittedAdded}/-${uncommittedRemoved} lines`}</TooltipContent>
-            </Tooltip>
-          )}
-        </div>
-      </WorktreeContextMenu>
+            {/* Pull badge - shown when behind remote */}
+            {behindCount > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={handlePull}
+                    className="shrink-0 text-[11px] font-medium text-primary transition-opacity hover:opacity-70"
+                  >
+                    <span className="flex items-center gap-0.5">
+                      <ArrowDown className="h-3 w-3" />
+                      {behindCount}
+                    </span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-80">
+                  <p>{`Merge ${behindCount} new commit${behindCount > 1 ? 's' : ''} from origin/${defaultBranch}`}</p>
+                  {gitStatus?.incoming_commits &&
+                    gitStatus.incoming_commits.length > 0 && (
+                      <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
+                        {gitStatus.incoming_commits.map(
+                          (c: { hash: string; message: string }) => (
+                            <li
+                              key={c.hash}
+                              className="flex gap-1.5 text-[11px] leading-tight"
+                            >
+                              <code className="shrink-0 text-muted-foreground">
+                                {c.hash}
+                              </code>
+                              <span className="truncate">{c.message}</span>
+                            </li>
+                          )
+                        )}
+                        {behindCount > gitStatus.incoming_commits.length && (
+                          <li className="text-[11px] text-muted-foreground">
+                            ...and{' '}
+                            {behindCount - gitStatus.incoming_commits.length}{' '}
+                            more
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Push badge - unpushed commits */}
+            {pushCount > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={handlePush}
+                    className="shrink-0 text-[11px] font-medium text-orange-500 transition-opacity hover:opacity-70"
+                  >
+                    <span className="flex items-center gap-0.5">
+                      <ArrowUp className="h-3 w-3" />
+                      {pushCount}
+                    </span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-80">
+                  <p>{`Push ${pushCount} commit${pushCount > 1 ? 's' : ''} to remote`}</p>
+                  {gitStatus?.unpushed_commits &&
+                    gitStatus.unpushed_commits.length > 0 && (
+                      <ul className="mt-1 space-y-0.5 border-t border-border/50 pt-1">
+                        {gitStatus.unpushed_commits.map(
+                          (c: { hash: string; message: string }) => (
+                            <li
+                              key={c.hash}
+                              className="flex gap-1.5 text-[11px] leading-tight"
+                            >
+                              <code className="shrink-0 text-muted-foreground">
+                                {c.hash}
+                              </code>
+                              <span className="truncate">{c.message}</span>
+                            </li>
+                          )
+                        )}
+                        {pushCount > gitStatus.unpushed_commits.length && (
+                          <li className="text-[11px] text-muted-foreground">
+                            ...and{' '}
+                            {pushCount - gitStatus.unpushed_commits.length} more
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Uncommitted changes */}
+            {hasUncommitted && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-medium">
+                    <span className="text-green-500">+{uncommittedAdded}</span>
+                    <span className="text-muted-foreground">/</span>
+                    <span className="text-red-500">-{uncommittedRemoved}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{`Uncommitted: +${uncommittedAdded}/-${uncommittedRemoved} lines`}</TooltipContent>
+              </Tooltip>
+            )}
+          </div>
+        </WorktreeContextMenu>
 
         {/* Expandable session list — grouped by status or flat chronological */}
         {isExpanded &&

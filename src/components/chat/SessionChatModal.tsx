@@ -1149,7 +1149,10 @@ export function SessionChatModal({
                     const config = statusConfig[status]
                     const chatState = useChatStore.getState()
                     const sessionLabel = chatState.sessionLabels[session.id]
-                    const resumeCommand = getResumeCommand(session, worktreePath)
+                    const resumeCommand = getResumeCommand(
+                      session,
+                      worktreePath
+                    )
                     return (
                       <ContextMenu key={session.id}>
                         <ContextMenuTrigger asChild>

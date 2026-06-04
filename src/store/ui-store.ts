@@ -48,7 +48,7 @@ export type CliUpdateModalType =
   | null
 
 export interface PendingCliUpdate {
-  type: 'claude' | 'gh' | 'codex' | 'opencode' | 'coderabbit'
+  type: 'claude' | 'gh' | 'codex' | 'opencode' | 'pi' | 'coderabbit'
   currentVersion: string
   latestVersion: string
   cliSource?: 'jean' | 'path'
@@ -1080,9 +1080,7 @@ export const useUIStore = create<UIState>()(
       setScratchpadOpen: (scope: 'session' | 'project' | null) =>
         set(
           state =>
-            state.scratchpadOpen === scope
-              ? state
-              : { scratchpadOpen: scope },
+            state.scratchpadOpen === scope ? state : { scratchpadOpen: scope },
           undefined,
           'setScratchpadOpen'
         ),

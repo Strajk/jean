@@ -165,8 +165,10 @@ describe('UnreadBell', () => {
         sessionId: 'session-2',
       })
     })
-    expect(screen.queryByText('Session two')).not.toBeInTheDocument()
     expect(screen.getByText('Session one')).toBeInTheDocument()
+    const readSession = screen.getByText('Session two').closest('button')
+    expect(readSession).toBeInTheDocument()
+    expect(readSession).toHaveClass('opacity-50')
   })
 
   it('shows an R keyboard affordance on the focused unread row', async () => {

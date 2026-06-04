@@ -5719,16 +5719,6 @@ pub async fn open_file_in_default_app(
         use std::os::windows::process::CommandExt;
         const CREATE_NO_WINDOW: u32 = 0x08000000;
 
-<<<<<<< HEAD
-=======
-        // Windows wraps .cmd shims through `cmd /c <bin> ...`. We prepend the wrapper
-        // tokens to whatever editor_cli_args returned.
-        let cmd_args_with = |bin: &str| -> Vec<String> {
-            let mut v = vec!["/c".to_string(), bin.to_string()];
-            v.extend(cli_args.iter().cloned());
-            v
-        };
->>>>>>> 44be7f5f (fix(rebase): align customizations with upstream after sync)
         let result = match editor_app.as_str() {
             "zed" => std::process::Command::new("zed")
                 .args(editor_file_args("zed", &path, line, column))
@@ -5941,7 +5931,7 @@ pub async fn list_saved_contexts(app: AppHandle) -> Result<SavedContextsResponse
     }
 
     // Sort by created_at descending (newest first)
-    contexts.sort_by(|a, b| b.created_at.cmp(&a.created_at));
+    contexts.sort_by_key(|b| std::cmp::Reverse(b.created_at));
 
     log::trace!("Found {} saved contexts", contexts.len());
     Ok(SavedContextsResponse { contexts })

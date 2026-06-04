@@ -80,7 +80,7 @@ pub async fn nightshift_get_runs(
     let mut runs = storage::load_runs(&app, &project_id)?;
 
     // Sort by started_at descending
-    runs.sort_by(|a, b| b.started_at.cmp(&a.started_at));
+    runs.sort_by_key(|b| std::cmp::Reverse(b.started_at));
 
     if let Some(limit) = limit {
         runs.truncate(limit as usize);

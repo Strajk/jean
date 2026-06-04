@@ -1178,7 +1178,9 @@ describe('preferences service', () => {
         )
       )
 
-      const switchEl = await screen.findByRole('switch')
+      const switchEl = await screen.findByRole('switch', {
+        name: /window transparency/i,
+      })
       expect(switchEl).toHaveAttribute('aria-checked', 'false')
 
       await user.click(switchEl)

@@ -1,4 +1,4 @@
-use crate::platform::wsl_aware_command;
+use crate::platform::{silent_command, wsl_aware_command};
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 

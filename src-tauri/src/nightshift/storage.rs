@@ -70,7 +70,7 @@ pub fn save_run(app: &AppHandle, run: &NightshiftRun) -> Result<(), String> {
 
     // Trim to max runs (keep most recent)
     if runs.len() > MAX_RUNS_PER_PROJECT {
-        runs.sort_by(|a, b| b.started_at.cmp(&a.started_at));
+        runs.sort_by_key(|b| std::cmp::Reverse(b.started_at));
         runs.truncate(MAX_RUNS_PER_PROJECT);
     }
 

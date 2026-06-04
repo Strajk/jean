@@ -256,14 +256,14 @@ fn merge_pi_line(response: &mut PiResponse, value: &Value) {
                 _ => {}
             }
         }
-        "message_update" | "assistant" => {
-            if value.get("role").and_then(Value::as_str) != Some("user") {
-                if let Some(text) = text_delta_from_value(value) {
-                    response.content.push_str(text);
-                    response.content_blocks.push(ContentBlock::Text {
-                        text: text.to_string(),
-                    });
-                }
+        "message_update" | "assistant"
+            if value.get("role").and_then(Value::as_str) != Some("user") =>
+        {
+            if let Some(text) = text_delta_from_value(value) {
+                response.content.push_str(text);
+                response.content_blocks.push(ContentBlock::Text {
+                    text: text.to_string(),
+                });
             }
         }
         "tool_execution_start" | "tool_call" => {
